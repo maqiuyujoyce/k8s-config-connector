@@ -42,11 +42,64 @@ import (
 // the spec and the status.
 func ResolveSpecAndStatus(resource *Resource, state *terraform.InstanceState) (
 	spec map[string]interface{}, status map[string]interface{}) {
+	if resource.ResourceConfig.Name == "google_storage_bucket" {
+		return GetSpecAndNewStatusFromState(resource, state)
+	}
+
 	val, found := k8s.GetAnnotation(k8s.StateIntoSpecAnnotation, resource)
 	if !found || val == k8s.StateMergeIntoSpec {
 		return GetSpecAndStatusFromState(resource, state)
 	}
 	return resolveDesiredStateInSpecAndObservedStateInStatus(resource, state)
+}
+
+func GetSpecAndNewStatusFromState(resource *Resource, state *terraform.InstanceState) (
+	spec map[string]interface{}, status map[string]interface{}) {
+
+	resourceID, ok := getResourceIDIfSupported(resource, status)
+	if !ok {
+		return spec, status
+	}
+
+	spec = deepcopy.MapStringInterface(resource.Spec)
+	unmodifiedState := InstanceStateToMap(resource.TFResource, state)
+	krmState := ConvertTFObjToKCCObj(unmodifiedState, resource.Spec, resource.TFResource.Schema,
+		&resource.ResourceConfig, "", resource.ManagedFields)
+	krmState = withCustomExpanders(krmState, resource, resource.Kind)
+	status = make(map[string]interface{})
+	statusState := make(map[string]interface{})
+	for field, fieldSchema := range resource.TFResource.Schema {
+		key := text.SnakeCaseToLowerCamelCase(field)
+		if ok, refConfig := IsReferenceField(field, &resource.ResourceConfig); ok && refConfig.Key != "" {
+			key = refConfig.Key
+		}
+		val := krmState[key]
+		if val == nil {
+			continue
+		}
+		if !fieldSchema.Required && !fieldSchema.Optional {
+			key = renameStatusFieldIfNeeded(resource.ResourceConfig.Name, key)
+			status[key] = val
+		}
+		if !SupportsResourceIDField(&resource.ResourceConfig) || resource.ResourceConfig.ResourceID.TargetField != field {
+			statusState[key] = val
+		}
+	}
+	if conditions, ok := resource.Status["conditions"]; ok {
+		status["conditions"] = deepcopy.DeepCopy(conditions)
+	}
+	if observedGeneration, ok := resource.Status["observedGeneration"]; ok {
+		status["observedGeneration"] = deepcopy.DeepCopy(observedGeneration)
+	}
+	statusState[k8s.ResourceIDFieldName] = resourceID
+	status["lastReconciledState"] = statusState
+	if len(spec) == 0 {
+		spec = nil
+	}
+	if len(status) == 0 {
+		status = nil
+	}
+	return spec, status
 }
 
 // GetSpecAndStatusFromState converts state into separate, KRM-compatible spec and status

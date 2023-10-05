@@ -151,7 +151,7 @@ func TestTFSchemaToJSONSchema(t *testing.T) {
 	}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			out := tfSchemaToJSONSchema(&tc.tf)
+			out := tfSchemaToJSONSchema(&tc.tf, false)
 			if !test.Equals(t, tc.json, out) {
 				t.Fatalf("\n\nexpected: %v,\n\nactual: %v", tc.json, *out)
 			}

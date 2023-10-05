@@ -44,7 +44,9 @@ func GenerateTF2CRD(sm *corekccv1alpha1.ServiceMapping, resourceConfig *corekccv
 	s := r.Schema
 	specFields := make(map[string]*schema.Schema)
 	statusFields := make(map[string]*schema.Schema)
+	allFields := make(map[string]*schema.Schema)
 	for k, v := range s {
+		allFields[k] = v
 		if isConfigurableField(v) {
 			specFields[k] = v
 		} else {
@@ -52,13 +54,18 @@ func GenerateTF2CRD(sm *corekccv1alpha1.ServiceMapping, resourceConfig *corekccv
 		}
 	}
 	openAPIV3Schema := crdboilerplate.GetOpenAPIV3SchemaSkeleton()
-	specJSONSchema := tfObjectSchemaToJSONSchema(specFields)
-	statusJSONSchema := tfObjectSchemaToJSONSchema(statusFields)
+	specJSONSchema := tfObjectSchemaToJSONSchema(specFields, false)
+	statusJSONSchema := tfObjectSchemaToJSONSchema(statusFields, false)
+	stateJSONSchema := tfObjectSchemaToJSONSchema(allFields, true)
+
 	removeIgnoredFields(resourceConfig, specJSONSchema, statusJSONSchema)
 	removeOverwrittenFields(resourceConfig, specJSONSchema)
 	markRequiredLocationalFieldsRequired(resourceConfig, specJSONSchema)
 	addResourceIDFieldIfSupported(resourceConfig, specJSONSchema)
 	handleHierarchicalReferences(resourceConfig, specJSONSchema)
+
+	removeMappedResourceIDFieldIfSupported(resourceConfig, stateJSONSchema)
+	addResourceIDFieldIfSupported(resourceConfig, stateJSONSchema)
 
 	if len(specJSONSchema.Properties) > 0 {
 		openAPIV3Schema.Properties["spec"] = *specJSONSchema
@@ -73,6 +80,9 @@ func GenerateTF2CRD(sm *corekccv1alpha1.ServiceMapping, resourceConfig *corekccv
 	}
 	for k, v := range statusJSONSchema.Properties {
 		openAPIV3Schema.Properties["status"].Properties[k] = v
+	}
+	if resource == "google_storage_bucket" {
+		openAPIV3Schema.Properties["status"].Properties["lastReconciledState"] = *stateJSONSchema
 	}
 
 	group := strings.ToLower(sm.Spec.Name) + "." + ApiDomain
@@ -99,17 +109,17 @@ func GenerateTF2CRD(sm *corekccv1alpha1.ServiceMapping, resourceConfig *corekccv
 	return crd, nil
 }
 
-func tfObjectSchemaToJSONSchema(s map[string]*schema.Schema) *apiextensions.JSONSchemaProps {
+func tfObjectSchemaToJSONSchema(s map[string]*schema.Schema, stateOnly bool) *apiextensions.JSONSchemaProps {
 	jsonSchema := apiextensions.JSONSchemaProps{
 		Type:       "object",
 		Properties: make(map[string]apiextensions.JSONSchemaProps),
 	}
 	for k, v := range s {
 		key := text.SnakeCaseToLowerCamelCase(k)
-		if v.Required {
+		if !stateOnly && v.Required {
 			jsonSchema.Required = slice.IncludeString(jsonSchema.Required, key)
 		}
-		js := *tfSchemaToJSONSchema(v)
+		js := *tfSchemaToJSONSchema(v, false)
 		description := js.Description
 		if description != "" {
 			description = ensureEndsInPeriod(description)
@@ -150,7 +160,7 @@ func ensureEndsInPeriod(str string) string {
 	return str
 }
 
-func tfSchemaToJSONSchema(tfSchema *schema.Schema) *apiextensions.JSONSchemaProps {
+func tfSchemaToJSONSchema(tfSchema *schema.Schema, stateOnly bool) *apiextensions.JSONSchemaProps {
 	jsonSchema := apiextensions.JSONSchemaProps{}
 	switch tfSchema.Type {
 	case schema.TypeBool:
@@ -169,16 +179,16 @@ func tfSchemaToJSONSchema(tfSchema *schema.Schema) *apiextensions.JSONSchemaProp
 			// MaxItems == 1 actually signifies that this is a nested object, and not actually a
 			// list, due to limitations of the TF schema type.
 			if tfSchema.MaxItems == 1 {
-				jsonSchema = *tfObjectSchemaToJSONSchema(v.Schema)
+				jsonSchema = *tfObjectSchemaToJSONSchema(v.Schema, stateOnly)
 				break
 			}
 			jsonSchema.Items = &apiextensions.JSONSchemaPropsOrArray{
-				Schema: tfObjectSchemaToJSONSchema(v.Schema),
+				Schema: tfObjectSchemaToJSONSchema(v.Schema, stateOnly),
 			}
 		case *schema.Schema:
 			// List of primitives
 			jsonSchema.Items = &apiextensions.JSONSchemaPropsOrArray{
-				Schema: tfSchemaToJSONSchema(v),
+				Schema: tfSchemaToJSONSchema(v, stateOnly),
 			}
 		default:
 			panic("could not parse elem attribute of TF list/set schema")
@@ -189,7 +199,7 @@ func tfSchemaToJSONSchema(tfSchema *schema.Schema) *apiextensions.JSONSchemaProp
 		jsonSchema.Type = "object"
 		if mapSchema, ok := tfSchema.Elem.(*schema.Schema); ok {
 			jsonSchema.AdditionalProperties = &apiextensions.JSONSchemaPropsOrBool{
-				Schema: tfSchemaToJSONSchema(mapSchema),
+				Schema: tfSchemaToJSONSchema(mapSchema, stateOnly),
 			}
 		}
 	case schema.TypeString:
@@ -205,6 +215,12 @@ func tfSchemaToJSONSchema(tfSchema *schema.Schema) *apiextensions.JSONSchemaProp
 	}
 	jsonSchema.Description = tfSchema.Description
 	return &jsonSchema
+}
+
+func removeMappedResourceIDFieldIfSupported(rc *corekccv1alpha1.ResourceConfig, s *apiextensions.JSONSchemaProps) {
+	if rc.ResourceID.TargetField != "" {
+		removeField(rc.ResourceID.TargetField, s)
+	}
 }
 
 func removeOverwrittenFields(rc *corekccv1alpha1.ResourceConfig, s *apiextensions.JSONSchemaProps) {
@@ -416,12 +432,12 @@ func isConfigurableField(tfSchema *schema.Schema) bool {
 	return tfSchema.Required || tfSchema.Optional
 }
 
-func addResourceIDFieldIfSupported(rc *corekccv1alpha1.ResourceConfig, spec *apiextensions.JSONSchemaProps) {
+func addResourceIDFieldIfSupported(rc *corekccv1alpha1.ResourceConfig, schema *apiextensions.JSONSchemaProps) {
 	if !krmtotf.SupportsResourceIDField(rc) {
 		return
 	}
 
-	spec.Properties[k8s.ResourceIDFieldName] = apiextensions.JSONSchemaProps{
+	schema.Properties[k8s.ResourceIDFieldName] = apiextensions.JSONSchemaProps{
 		Type:        "string",
 		Description: generateResourceIDFieldDescription(rc),
 	}
