@@ -16,6 +16,7 @@ package tf
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"strings"
 	"sync"
@@ -253,6 +254,8 @@ func (r *Reconciler) sync(ctx context.Context, krmResource *krmtotf.Resource) (r
 		return false, r.handleDeleted(ctx, krmResource)
 	}
 	liveState, err := krmtotf.FetchLiveStateForCreateAndUpdate(ctx, krmResource, r.provider, r, r.smLoader)
+	j, _ := json.MarshalIndent(liveState, "", "    ")
+	fmt.Printf("maqiuyu... live state is \n%v\n%v\r", string(j), liveState)
 	if err != nil {
 		if unwrappedErr, ok := lifecyclehandler.CausedByUnresolvableDeps(err); ok {
 			r.logger.Info(unwrappedErr.Error(), "resource", k8s.GetNamespacedName(krmResource))
@@ -285,6 +288,8 @@ func (r *Reconciler) sync(ctx context.Context, krmResource *krmtotf.Resource) (r
 		}
 		return false, r.HandleUpdateFailed(ctx, &krmResource.Resource, fmt.Errorf("error expanding resource configuration for kind %s: %v", krmResource.Kind, err))
 	}
+	j, _ = json.MarshalIndent(config, "", "    ")
+	fmt.Printf("maqiuyu... desired state is \n%v\n%v\r", string(j), config)
 	diff, err := krmResource.TFResource.Diff(ctx, liveState, config, r.provider.Meta())
 	if err != nil {
 		return false, r.HandleUpdateFailed(ctx, &krmResource.Resource, fmt.Errorf("error calculating diff: %v", err))

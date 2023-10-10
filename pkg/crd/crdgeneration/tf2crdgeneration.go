@@ -44,7 +44,9 @@ func GenerateTF2CRD(sm *corekccv1alpha1.ServiceMapping, resourceConfig *corekccv
 	s := r.Schema
 	specFields := make(map[string]*schema.Schema)
 	statusFields := make(map[string]*schema.Schema)
+	allFields := make(map[string]*schema.Schema)
 	for k, v := range s {
+		allFields[k] = v
 		if isConfigurableField(v) {
 			specFields[k] = v
 		} else {
@@ -54,6 +56,7 @@ func GenerateTF2CRD(sm *corekccv1alpha1.ServiceMapping, resourceConfig *corekccv
 	openAPIV3Schema := crdboilerplate.GetOpenAPIV3SchemaSkeleton()
 	specJSONSchema := tfObjectSchemaToJSONSchema(specFields)
 	statusJSONSchema := tfObjectSchemaToJSONSchema(statusFields)
+
 	removeIgnoredFields(resourceConfig, specJSONSchema, statusJSONSchema)
 	removeOverwrittenFields(resourceConfig, specJSONSchema)
 	markRequiredLocationalFieldsRequired(resourceConfig, specJSONSchema)
@@ -73,6 +76,15 @@ func GenerateTF2CRD(sm *corekccv1alpha1.ServiceMapping, resourceConfig *corekccv
 	}
 	for k, v := range statusJSONSchema.Properties {
 		openAPIV3Schema.Properties["status"].Properties[k] = v
+	}
+	if resource == "google_storage_bucket" {
+		trueValue := true
+		stateJSONSchema := apiextensions.JSONSchemaProps{
+			Type:                   "object",
+			Description:            "The observed state of the underlying GCP resource.",
+			XPreserveUnknownFields: &trueValue,
+		}
+		openAPIV3Schema.Properties["status"].Properties["observedState"] = stateJSONSchema
 	}
 
 	group := strings.ToLower(sm.Spec.Name) + "." + ApiDomain
@@ -205,6 +217,12 @@ func tfSchemaToJSONSchema(tfSchema *schema.Schema) *apiextensions.JSONSchemaProp
 	}
 	jsonSchema.Description = tfSchema.Description
 	return &jsonSchema
+}
+
+func removeMappedResourceIDFieldIfSupported(rc *corekccv1alpha1.ResourceConfig, s *apiextensions.JSONSchemaProps) {
+	if rc.ResourceID.TargetField != "" {
+		removeField(rc.ResourceID.TargetField, s)
+	}
 }
 
 func removeOverwrittenFields(rc *corekccv1alpha1.ResourceConfig, s *apiextensions.JSONSchemaProps) {
@@ -416,12 +434,12 @@ func isConfigurableField(tfSchema *schema.Schema) bool {
 	return tfSchema.Required || tfSchema.Optional
 }
 
-func addResourceIDFieldIfSupported(rc *corekccv1alpha1.ResourceConfig, spec *apiextensions.JSONSchemaProps) {
+func addResourceIDFieldIfSupported(rc *corekccv1alpha1.ResourceConfig, schema *apiextensions.JSONSchemaProps) {
 	if !krmtotf.SupportsResourceIDField(rc) {
 		return
 	}
 
-	spec.Properties[k8s.ResourceIDFieldName] = apiextensions.JSONSchemaProps{
+	schema.Properties[k8s.ResourceIDFieldName] = apiextensions.JSONSchemaProps{
 		Type:        "string",
 		Description: generateResourceIDFieldDescription(rc),
 	}

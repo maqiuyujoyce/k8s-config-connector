@@ -23,4 +23,10 @@ func init() {
 	resourceContextMap["forcedestroy"] = ResourceContext{
 		ResourceKind: "StorageBucket",
 	}
+	resourceContextMap["maqiuyu"] = ResourceContext{
+		ResourceKind:       "StorageBucket",
+		SkipUpdate:         true,
+		SkipNoChange:       true,
+		SkipDriftDetection: true,
+	}
 }

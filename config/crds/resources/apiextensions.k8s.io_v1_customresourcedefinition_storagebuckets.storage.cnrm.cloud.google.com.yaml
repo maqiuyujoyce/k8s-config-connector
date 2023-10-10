@@ -353,6 +353,10 @@ spec:
                   current reported status reflects the most recent desired state of
                   the resource.
                 type: integer
+              observedState:
+                description: The observed state of the underlying GCP resource.
+                type: object
+                x-kubernetes-preserve-unknown-fields: true
               selfLink:
                 description: The URI of the created resource.
                 type: string

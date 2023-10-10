@@ -42,11 +42,62 @@ import (
 // the spec and the status.
 func ResolveSpecAndStatus(resource *Resource, state *terraform.InstanceState) (
 	spec map[string]interface{}, status map[string]interface{}) {
+	if resource.ResourceConfig.Name == "google_storage_bucket" {
+		return GetSpecAndNewStatusFromState(resource, state)
+	}
+
 	val, found := k8s.GetAnnotation(k8s.StateIntoSpecAnnotation, resource)
 	if !found || val == k8s.StateMergeIntoSpec {
 		return GetSpecAndStatusFromState(resource, state)
 	}
 	return resolveDesiredStateInSpecAndObservedStateInStatus(resource, state)
+}
+
+func GetSpecAndNewStatusFromState(resource *Resource, state *terraform.InstanceState) (
+	spec map[string]interface{}, status map[string]interface{}) {
+
+	spec = deepcopy.MapStringInterface(resource.Spec)
+	unmodifiedState := InstanceStateToMap(resource.TFResource, state)
+	krmState := ConvertTFObjToKCCObj(unmodifiedState, resource.Spec, resource.TFResource.Schema,
+		&resource.ResourceConfig, "", resource.ManagedFields, false)
+	stateOnlyState := ConvertTFObjToKCCObj(unmodifiedState, resource.Spec, resource.TFResource.Schema,
+		&resource.ResourceConfig, "", resource.ManagedFields, true)
+	krmState = withCustomExpanders(krmState, resource, resource.Kind)
+	status = make(map[string]interface{})
+	statusState := make(map[string]interface{})
+	fmt.Printf("\n\n%+v\n\n", state)
+	for field, fieldSchema := range resource.TFResource.Schema {
+		key := text.SnakeCaseToLowerCamelCase(field)
+		originalVal := stateOnlyState[key]
+		if originalVal != nil {
+			statusState[key] = originalVal
+		}
+		if ok, refConfig := IsReferenceField(field, &resource.ResourceConfig); ok && refConfig.Key != "" {
+			key = refConfig.Key
+		}
+		val := krmState[key]
+		if val == nil {
+			continue
+		}
+		if !fieldSchema.Required && !fieldSchema.Optional {
+			key = renameStatusFieldIfNeeded(resource.ResourceConfig.Name, key)
+			status[key] = val
+		}
+	}
+	if conditions, ok := resource.Status["conditions"]; ok {
+		status["conditions"] = deepcopy.DeepCopy(conditions)
+	}
+	if observedGeneration, ok := resource.Status["observedGeneration"]; ok {
+		status["observedGeneration"] = deepcopy.DeepCopy(observedGeneration)
+	}
+	status["observedState"] = statusState
+	if len(spec) == 0 {
+		spec = nil
+	}
+	if len(status) == 0 {
+		status = nil
+	}
+	return spec, status
 }
 
 // GetSpecAndStatusFromState converts state into separate, KRM-compatible spec and status
@@ -65,7 +116,7 @@ func GetSpecAndStatusFromState(resource *Resource, state *terraform.InstanceStat
 	spec map[string]interface{}, status map[string]interface{}) {
 	unmodifiedState := InstanceStateToMap(resource.TFResource, state)
 	krmState := ConvertTFObjToKCCObj(unmodifiedState, resource.Spec, resource.TFResource.Schema,
-		&resource.ResourceConfig, "", resource.ManagedFields)
+		&resource.ResourceConfig, "", resource.ManagedFields, false)
 	krmState = withCustomExpanders(krmState, resource, resource.Kind)
 	spec = make(map[string]interface{})
 	status = make(map[string]interface{})
@@ -364,8 +415,8 @@ func getValueFromState(state map[string]interface{}, key string) (string, bool) 
 //     state and the prevSpec.
 func ConvertTFObjToKCCObj(state map[string]interface{}, prevSpec map[string]interface{},
 	schemas map[string]*tfschema.Schema, rc *corekccv1alpha1.ResourceConfig, prefix string,
-	managedFields *fieldpath.Set) map[string]interface{} {
-	raw := convertTFMapToKCCMap(state, prevSpec, schemas, rc, prefix, managedFields)
+	managedFields *fieldpath.Set, stateOnly bool) map[string]interface{} {
+	raw := convertTFMapToKCCMap(state, prevSpec, schemas, rc, prefix, managedFields, stateOnly)
 	// Round-trip via JSON in order to ensure consistency with unstructured.Unstructured's Object type.
 	var ret map[string]interface{}
 	if err := util.Marshal(raw, &ret); err != nil {
@@ -376,17 +427,17 @@ func ConvertTFObjToKCCObj(state map[string]interface{}, prevSpec map[string]inte
 
 func convertTFMapToKCCMap(state map[string]interface{}, prevSpec map[string]interface{},
 	schemas map[string]*tfschema.Schema, rc *corekccv1alpha1.ResourceConfig, prefix string,
-	managedFields *fieldpath.Set) map[string]interface{} {
+	managedFields *fieldpath.Set, stateOnly bool) map[string]interface{} {
 	ret := make(map[string]interface{})
 	for field, schema := range schemas {
 		qualifiedName := field
 		if prefix != "" {
 			qualifiedName = prefix + "." + field
 		}
-		if isOverriddenField(qualifiedName, rc) {
+		if !stateOnly && isOverriddenField(qualifiedName, rc) {
 			continue
 		}
-		if ok, refConfig := IsReferenceField(qualifiedName, rc); ok {
+		if ok, refConfig := IsReferenceField(qualifiedName, rc); ok && !stateOnly {
 			key := GetKeyForReferenceField(refConfig)
 			if val := convertTFReferenceToKCCReference(field, key, state, prevSpec, refConfig); val != nil {
 				ret[key] = val
@@ -472,7 +523,7 @@ func convertTFMapToKCCMap(state map[string]interface{}, prevSpec map[string]inte
 						nestedManagedFields = fieldpath.NewSet()
 					}
 				}
-				if val := convertTFMapToKCCMap(tfObjMap, prevObjMap, tfObjSchema, rc, qualifiedName, nestedManagedFields); val != nil {
+				if val := convertTFMapToKCCMap(tfObjMap, prevObjMap, tfObjSchema, rc, qualifiedName, nestedManagedFields, stateOnly); val != nil {
 					ret[key] = val
 				}
 				continue
@@ -483,7 +534,7 @@ func convertTFMapToKCCMap(state map[string]interface{}, prevSpec map[string]inte
 				// the status can be treated the same as lists, as the new state is the definitive
 				// source of truth and there is no reference resolution.
 				if schema.Required || schema.Optional {
-					retObj := convertTFSetToKCCSet(stateVal, prevSpecVal, schema, rc, qualifiedName)
+					retObj := convertTFSetToKCCSet(stateVal, prevSpecVal, schema, rc, qualifiedName, stateOnly)
 					if retObj != nil {
 						ret[key] = retObj
 					}
@@ -506,7 +557,7 @@ func convertTFMapToKCCMap(state map[string]interface{}, prevSpec map[string]inte
 					if idx < len(prevList) {
 						prevObjMap, _ = prevList[idx].(map[string]interface{})
 					}
-					if val := convertTFMapToKCCMap(tfObjMap, prevObjMap, tfObjSchema, rc, qualifiedName, nil); val != nil {
+					if val := convertTFMapToKCCMap(tfObjMap, prevObjMap, tfObjSchema, rc, qualifiedName, nil, stateOnly); val != nil {
 						retObjList = append(retObjList, val)
 					}
 				}
@@ -606,7 +657,7 @@ func convertTFReferenceToKCCReference(tfField, specKey string, state map[string]
 }
 
 // convertTFSetToKCCSet converts a set object in Terraform to a KCC set object
-func convertTFSetToKCCSet(stateVal, prevSpecVal interface{}, schema *tfschema.Schema, rc *corekccv1alpha1.ResourceConfig, prefix string) interface{} {
+func convertTFSetToKCCSet(stateVal, prevSpecVal interface{}, schema *tfschema.Schema, rc *corekccv1alpha1.ResourceConfig, prefix string, stateOnly bool) interface{} {
 	if containsReferenceField(prefix, rc) {
 		// TODO(kcc-eng): Support the case where the hashing function depends on resolved values from
 		//  resource references. For the time being, fall back to the declared state.
@@ -655,12 +706,12 @@ func convertTFSetToKCCSet(stateVal, prevSpecVal interface{}, schema *tfschema.Sc
 			stateElem = map[string]interface{}{}
 		}
 		retObjList = append(retObjList,
-			convertTFElemToKCCElem(schema.Elem, stateElem, prevElem, rc, prefix))
+			convertTFElemToKCCElem(schema.Elem, stateElem, prevElem, rc, prefix, stateOnly))
 	}
 	// append any new elements in the list to the end
 	for _, newElem := range stateHashMap {
 		retObjList = append(retObjList,
-			convertTFElemToKCCElem(schema.Elem, newElem, nil, rc, prefix))
+			convertTFElemToKCCElem(schema.Elem, newElem, nil, rc, prefix, stateOnly))
 	}
 	if len(retObjList) == 0 {
 		return nil
@@ -755,7 +806,7 @@ func getDefaultValueForTFType(tfType tfschema.ValueType) interface{} {
 	}
 }
 
-func convertTFElemToKCCElem(elemSchema, tfObj, prevSpecObj interface{}, rc *corekccv1alpha1.ResourceConfig, prefix string) interface{} {
+func convertTFElemToKCCElem(elemSchema, tfObj, prevSpecObj interface{}, rc *corekccv1alpha1.ResourceConfig, prefix string, stateOnly bool) interface{} {
 	switch elemSchema.(type) {
 	case *tfschema.Schema:
 		if prevSpecObj != nil {
@@ -766,7 +817,7 @@ func convertTFElemToKCCElem(elemSchema, tfObj, prevSpecObj interface{}, rc *core
 		tfObjSchema := elemSchema.(*tfschema.Resource).Schema
 		tfObjMap, _ := tfObj.(map[string]interface{})
 		prevObjMap, _ := prevSpecObj.(map[string]interface{})
-		return convertTFMapToKCCMap(tfObjMap, prevObjMap, tfObjSchema, rc, prefix, nil)
+		return convertTFMapToKCCMap(tfObjMap, prevObjMap, tfObjSchema, rc, prefix, nil, stateOnly)
 	default:
 		return prevSpecObj
 	}

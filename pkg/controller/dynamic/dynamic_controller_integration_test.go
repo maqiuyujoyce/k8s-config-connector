@@ -19,6 +19,7 @@ package dynamic_test
 
 import (
 	"context"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"net/http"
@@ -239,7 +240,8 @@ func validateCreate(t *testing.T, testContext testrunner.TestContext, systemCont
 	if err != nil {
 		t.Fatalf("unexpected error when GETting '%v': %v", initialUnstruct.GetName(), err)
 	}
-	t.Logf("created resource is %v\r", gcpUnstruct)
+	j, _ := json.MarshalIndent(gcpUnstruct, "", "    ")
+	t.Logf("created resource is \n%v\r", string(j))
 	if resourceContext.SupportsLabels(systemContext.SMLoader) {
 		testcontroller.AssertLabelsMatchAndHaveManagedLabel(t, gcpUnstruct.GetLabels(), reconciledUnstruct.GetLabels())
 	}
