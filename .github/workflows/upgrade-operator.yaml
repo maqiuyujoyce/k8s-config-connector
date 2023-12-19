@@ -16,7 +16,8 @@ name: Upgrade Operator
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "202312-github-action" ]
+#    branches: [ "master" ]
 #    tags: [ "v1.[0-9]+.[0-9]+" ]
 
 jobs:
