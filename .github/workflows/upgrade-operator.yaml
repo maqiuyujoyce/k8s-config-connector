@@ -16,8 +16,8 @@ name: Upgrade Operator
 
 on:
   push:
-    branches: [ "202312-github-action" ]
-#    branches: [ "master" ]
+    # The action is only triggered when a new tag following the current
+    # convention is created.
     tags: [ "v1.[0-9]+.[0-9]+" ]
 
 jobs:
@@ -34,6 +34,9 @@ jobs:
       - uses: actions/setup-go@v4
         with:
           go-version: "1.21.5"
+      - name: Exit if not on 202312-github-action branch
+        if: endsWith(github.ref, '202312-github-action') == false
+        run: exit -1
       - name: Set env
         run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
       - name: "Test version"
