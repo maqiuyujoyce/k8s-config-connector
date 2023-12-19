@@ -27,13 +27,16 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          # This is introduced to make sure 'go generate' works properly
+          # This is introduced to make sure 'go generate' works properly???
           path: "src/k8s-config-connector"
           # This is to get all the commits in order to validate them
           fetch-depth: 0
       - uses: actions/setup-go@v4
         with:
           go-version: "1.21.5"
+#      - name: Exit if not on master branch
+#        if: endsWith(github.ref, 'master') == false
+#        run: exit -1
       - name: Exit if not on 202312-github-action branch
         if: endsWith(github.ref, '202312-github-action') == false
         run: exit -1
@@ -50,3 +53,5 @@ jobs:
           git add .
           git commit -m "Upgrade KCC operator to version ${{ env.RELEASE_VERSION }} "
           git log --oneline
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
