@@ -55,8 +55,8 @@ jobs:
           make upgrade-kcc
           git config user.name "GitHub Actions Bot"
           git config user.email "<>"
+          git diff
           git add .
           git commit -m "Upgrade KCC operator to version ${{ env.RELEASE_VERSION }} "
-          git log --oneline
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
