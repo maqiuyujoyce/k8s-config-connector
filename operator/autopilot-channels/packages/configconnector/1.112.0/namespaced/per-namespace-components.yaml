@@ -15,8 +15,6 @@ kind: RoleBinding
 metadata:
   annotations:
     cnrm.cloud.google.com/version: 1.112.0
-  finalizers:
-  - configconnector.cnrm.cloud.google.com/finalizer
   labels:
     cnrm.cloud.google.com/scoped-namespace: ${NAMESPACE?}
     cnrm.cloud.google.com/system: "true"
@@ -36,8 +34,6 @@ kind: RoleBinding
 metadata:
   annotations:
     cnrm.cloud.google.com/version: 1.112.0
-  finalizers:
-  - configconnector.cnrm.cloud.google.com/finalizer
   labels:
     cnrm.cloud.google.com/scoped-namespace: ${NAMESPACE?}
     cnrm.cloud.google.com/system: "true"
