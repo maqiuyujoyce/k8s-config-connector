@@ -38,6 +38,7 @@ jobs:
 #      - name: Exit if not on master branch
 #        if: endsWith(github.ref, 'master') == false
 #        run: exit -1
+      # Doesn't work if triggered by tag creation!!!
       - name: Exit if not on 202312-github-action branch
         if: endsWith(github.ref, '202312-github-action') == false
         run: |
@@ -45,6 +46,7 @@ jobs:
           exit -1
       - name: Set env
         run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+      # No need. Remove before PR creation!!!
       - name: "Test version"
         run: |
           echo $RELEASE_VERSION
@@ -58,5 +60,15 @@ jobs:
           git diff
           git add .
           git commit -m "Upgrade KCC operator to version ${{ env.RELEASE_VERSION }} "
+          git remote -vv
+          export LOCAL_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+          echo ${LOCAL_BRANCH}
+          export REMOTE_BRANCH=202312-test-pr-creation-$(date +"%s")
+          echo ${REMOTE_BRANCH}
+          git push origin ${LOCAL_BRANCH}:${REMOTE_BRANCH}
+          gh repo set-default maqiuyujoyce/k8s-config-connector
+          gh pr create --head ${REMOTE_BRANCH} --title 'this is a test pr' --body 'test
+          test
+          test'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
