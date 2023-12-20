@@ -68,6 +68,6 @@ jobs:
           echo ${REMOTE_BRANCH}
           git push target ${LOCAL_BRANCH}:${REMOTE_BRANCH}
           gh repo set-default maqiuyujoyce/k8s-config-connector
-          gh pr create --head ${REMOTE_BRANCH} --title 'Upgrade KCC operator to version ${{ env.RELEASE_VERSION }}'
+          gh pr create --head ${REMOTE_BRANCH} --title 'Upgrade KCC operator to version ${{ env.RELEASE_VERSION }}' --body 'Upgrade KCC operator to version ${{ env.RELEASE_VERSION }}.'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
