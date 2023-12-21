@@ -53,7 +53,6 @@ jobs:
           echo ${{ env.RELEASE_VERSION }}
       - name: "Run make upgrade-kcc"
         run: |
-          cd ./src/k8s-config-connector
           git config user.name "GitHub Actions Bot"
           git config user.email "<>"
           git branch
