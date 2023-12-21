@@ -36,9 +36,8 @@ jobs:
       - name: "Set env"
         run: |
           echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
-          echo "env.RELEASE_VERSION: ${{ env.RELEASE_VERSION }}"
       # ${{ env.RELEASE_VERSION }} is not accessible in the same step when it is
-      # set?
+      # set.
       - name: "Verify release version"
         run: |
           echo "env.RELEASE_VERSION: ${{ env.RELEASE_VERSION }}"
@@ -52,20 +51,16 @@ jobs:
           git log --oneline -10
           echo "Current branch:"
           git branch
-      - name: "Upgrade operator"
+      - name: "Upgrade KCC operator"
         run: |
-          echo "Checking the current state..."
-          echo "Location: $(pwd)"
-          echo "Commit history:"
-          git log --oneline -10
-          echo "Current branch:"
-          git branch
-          echo "Running 'make upgrade-kcc'..."
+          echo ""Running 'make upgrade-kcc'..."
           make -C operator upgrade-kcc
           echo "Ensuring there is diff and committing the change..."
           git diff
           git add .
           git commit -m "Upgrade KCC operator to version ${{ env.RELEASE_VERSION }}"
+      - name: "Create PR"
+        run: |
           echo "Adding a remote pointing to GoogleCloudPlatform/k8s-config-connector..."
           git remote add target https://github.com/maqiuyujoyce/k8s-config-connector.git
           git remote -vv
