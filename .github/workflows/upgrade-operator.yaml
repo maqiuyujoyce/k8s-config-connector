@@ -42,10 +42,18 @@ jobs:
       - name: "Verify release version"
         run: |
           echo "env.RELEASE_VERSION: ${{ env.RELEASE_VERSION }}"
-      - name: "Upgrade operator"
+      - name: "Check current state"
         run: |
           git config user.name "GitHub Actions Bot"
           git config user.email "<>"
+          echo "Checking the current state..."
+          echo "Location: $(pwd)"
+          echo "Commit history:"
+          git log --oneline -10
+          echo "Current branch:"
+          git branch
+      - name: "Upgrade operator"
+        run: |
           echo "Checking the current state..."
           echo "Location: $(pwd)"
           echo "Commit history:"
