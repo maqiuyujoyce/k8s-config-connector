@@ -55,6 +55,8 @@ jobs:
         run: |
           git config user.name "GitHub Actions Bot"
           git config user.email "<>"
+          pwd
+          git log --oneline -10
           git branch
           make -C operator upgrade-kcc
           git diff
