@@ -51,23 +51,30 @@ jobs:
         run: |
           echo $RELEASE_VERSION
           echo ${{ env.RELEASE_VERSION }}
-      - name: "Run make upgrade-kcc"
+      - name: "Upgrade KCC operator"
         run: |
           git config user.name "GitHub Actions Bot"
           git config user.email "<>"
-          pwd
+          echo "Checking the current state..."
+          echo "Location: $(pwd)"
+          echo "Commit history:"
           git log --oneline -10
+          echo "Current branch:"
           git branch
+          echo "Running 'make upgrade-kcc'..."
           make -C operator upgrade-kcc
+          echo "Ensuring there is diff and committing the change..."
           git diff
           git add .
           git commit -m "Upgrade KCC operator to version ${{ env.RELEASE_VERSION }}"
+          echo "Adding a remote pointing to GoogleCloudPlatform/k8s-config-connector..."
           git remote add target https://github.com/maqiuyujoyce/k8s-config-connector.git
           git remote -vv
           export LOCAL_BRANCH=$(git rev-parse --abbrev-ref HEAD)
           echo "LOCAL_BRANCH: ${LOCAL_BRANCH}"
           export REMOTE_BRANCH=202312-test-pr-creation-$(date +"%s")
           echo "REMOTE_BRANCH: ${REMOTE_BRANCH}"
+          echo "Creating the PR..."
           git push target HEAD:${REMOTE_BRANCH}
           gh repo set-default maqiuyujoyce/k8s-config-connector
           gh pr create --head ${REMOTE_BRANCH} --title 'Upgrade KCC operator to version ${{ env.RELEASE_VERSION }}' --body 'Upgrade KCC operator to version ${{ env.RELEASE_VERSION }}.'
