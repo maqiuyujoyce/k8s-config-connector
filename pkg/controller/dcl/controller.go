@@ -434,7 +434,7 @@ func (r *Reconciler) applyChangesForBackwardsCompatibility(ctx context.Context, 
 	// Ensure the resource has a state-into-spec annotation.
 	// This is done to be backwards compatible with resources
 	// created before the webhook for defaulting the annotation was added.
-	if err := k8s.EnsureSpecIntoSateAnnotation(&resource.Resource); err != nil {
+	if err := k8s.EnsureStateIntoSpecAnnotation(&resource.Resource); err != nil {
 		return fmt.Errorf("error ensuring resource '%v' has a '%v' annotation: %v", k8s.GetNamespacedName(resource), k8s.StateIntoSpecAnnotation, err)
 	}
 	return nil

@@ -62,7 +62,7 @@ type Config struct {
 
 // Creates a new controller-runtime manager.Manager and starts all of the KCC controllers pointed at the
 // API server associated with the rest.Config argument. The controllers are:
-// { tf, gsakeysecretgenerator, iampolicy, iampolicymember, registration-controller }
+// { tf, dcl, gsakeysecretgenerator, iampolicy, iampolicymember, iampartialpolicy, iamauditconfig, registration-controller }
 //
 // This serves as the entry point for the in-cluster main and the Borg service main. Any changes made should be done
 // with care.

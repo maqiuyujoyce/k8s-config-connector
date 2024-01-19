@@ -31,7 +31,7 @@ func ValidateOrDefaultStateIntoSpecAnnotation(obj *unstructured.Unstructured) er
 	return validateStateIntoSpecAnnotation(obj, obj.GroupVersionKind())
 }
 
-func EnsureSpecIntoSateAnnotation(obj *Resource) error {
+func EnsureStateIntoSpecAnnotation(obj *Resource) error {
 	_, found := GetAnnotation(StateIntoSpecAnnotation, obj)
 	if !found {
 		SetAnnotation(StateIntoSpecAnnotation, StateMergeIntoSpec, obj)
