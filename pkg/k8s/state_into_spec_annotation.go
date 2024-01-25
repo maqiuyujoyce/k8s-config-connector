@@ -19,24 +19,28 @@ import (
 	"strings"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-func ValidateOrDefaultStateIntoSpecAnnotation(obj *unstructured.Unstructured) error {
+// ValidateOrDefaultStateIntoSpecAnnotation validates the value of the
+// 'state-into-spec' annotation if it is set and defaults the annotation to the
+// passed in defaultValue if it is unset.
+func ValidateOrDefaultStateIntoSpecAnnotation(obj metav1.Object, gvk schema.GroupVersionKind, defaultValue string) error {
 	_, found := GetAnnotation(StateIntoSpecAnnotation, obj)
-	if !found {
-		SetAnnotation(StateIntoSpecAnnotation, StateMergeIntoSpec, obj)
+	if found {
+		return validateStateIntoSpecAnnotation(obj, gvk)
 	}
-	return validateStateIntoSpecAnnotation(obj, obj.GroupVersionKind())
+	defaultStateIntoSpecAnnotation(obj, gvk, defaultValue)
+	return nil
 }
 
-func EnsureSpecIntoSateAnnotation(obj *Resource) error {
-	_, found := GetAnnotation(StateIntoSpecAnnotation, obj)
-	if !found {
+func defaultStateIntoSpecAnnotation(obj metav1.Object, gvk schema.GroupVersionKind, defaultValue string) {
+	if defaultValue == StateAbsentInSpec && !ResourceSupportsStateAbsentInSpec(gvk.Kind) {
 		SetAnnotation(StateIntoSpecAnnotation, StateMergeIntoSpec, obj)
+		return
 	}
-	return validateStateIntoSpecAnnotation(obj, obj.GroupVersionKind())
+	SetAnnotation(StateIntoSpecAnnotation, defaultValue, obj)
+	return
 }
 
 // ResourceSupportsStateAbsentInSpec returns true for resource kinds which
@@ -56,7 +60,7 @@ func validateStateIntoSpecAnnotation(obj metav1.Object, gvk schema.GroupVersionK
 		return fmt.Errorf("couldn't find the value for '%v' annotation", StateIntoSpecAnnotation)
 	}
 
-	if !isAcceptedValue(val) {
+	if !isAcceptedValue(val, StateIntoSpecAnnotationValues) {
 		return fmt.Errorf("invalid value '%v' for '%v' annotation, can be one of {%v}", val, StateIntoSpecAnnotation, strings.Join(StateIntoSpecAnnotationValues, ", "))
 	}
 
@@ -66,8 +70,8 @@ func validateStateIntoSpecAnnotation(obj metav1.Object, gvk schema.GroupVersionK
 	return nil
 }
 
-func isAcceptedValue(val string) bool {
-	for _, v := range StateIntoSpecAnnotationValues {
+func isAcceptedValue(val string, acceptedValues []string) bool {
+	for _, v := range acceptedValues {
 		if val == v {
 			return true
 		}
