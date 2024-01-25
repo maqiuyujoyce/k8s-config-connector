@@ -22,16 +22,42 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-// ValidateOrDefaultStateIntoSpecAnnotation validates the value of the
-// 'state-into-spec' annotation if it is set and defaults the annotation to the
-// passed in defaultValue if it is unset.
+// StateIntoSpecValue contains the required 'defaultValue' field and the
+// optional 'userOverride' field.
+type StateIntoSpecValue struct {
+	defaultValue string
+	userOverride *string
+}
+
+func NewStateIntoSpecValue(defaultValue string, userOverride *string) (*StateIntoSpecValue, error) {
+	if !isAcceptedValue(defaultValue, StateIntoSpecAnnotationValues) {
+		return nil, fmt.Errorf("invalid default value '%v' for '%v' annotation, need to be one of {%v}", defaultValue, StateIntoSpecAnnotation, strings.Join(StateIntoSpecAnnotationValues, ", "))
+	}
+	if userOverride != nil && !isAcceptedValue(*userOverride, StateIntoSpecAnnotationValues) {
+		return nil, fmt.Errorf("invalid user override value '%v' for '%v' annotation, need to be one of {%v}", userOverride, StateIntoSpecAnnotation, strings.Join(StateIntoSpecAnnotationValues, ", "))
+	}
+	return &StateIntoSpecValue{
+		defaultValue: defaultValue,
+		userOverride: userOverride,
+	}, nil
+}
+
+func (v *StateIntoSpecValue) GetValue() string {
+	if v.userOverride == nil {
+		return v.defaultValue
+	}
+	return *v.userOverride
+}
+
+// ValidateOrDefaultStateIntoSpecAnnotation defaults the annotation to the
+// passed in defaultValue if it is unset and validates the value of the
+// 'state-into-spec' annotation.
 func ValidateOrDefaultStateIntoSpecAnnotation(obj metav1.Object, gvk schema.GroupVersionKind, defaultValue string) error {
 	_, found := GetAnnotation(StateIntoSpecAnnotation, obj)
-	if found {
-		return validateStateIntoSpecAnnotation(obj, gvk)
+	if !found {
+		defaultStateIntoSpecAnnotation(obj, gvk, defaultValue)
 	}
-	defaultStateIntoSpecAnnotation(obj, gvk, defaultValue)
-	return nil
+	return validateStateIntoSpecAnnotation(obj, gvk)
 }
 
 func defaultStateIntoSpecAnnotation(obj metav1.Object, gvk schema.GroupVersionKind, defaultValue string) {

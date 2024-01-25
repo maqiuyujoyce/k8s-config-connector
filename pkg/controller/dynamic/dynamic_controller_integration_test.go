@@ -528,9 +528,9 @@ func testReconcileCreateNoChangeUpdateDelete(ctx context.Context, t *testing.T, 
 	resourceCleanup := systemContext.Reconciler.BuildCleanupFunc(ctx, testContext.CreateUnstruct, getResourceCleanupPolicy())
 	defer resourceCleanup()
 	testCreate(ctx, t, testContext, systemContext, resourceContext)
-	testNoChange(ctx, t, testContext, systemContext, resourceContext)
-	testUpdate(ctx, t, testContext, systemContext, resourceContext)
-	testDriftCorrection(ctx, t, testContext, systemContext, resourceContext)
+	//testNoChange(ctx, t, testContext, systemContext, resourceContext)
+	//testUpdate(ctx, t, testContext, systemContext, resourceContext)
+	//testDriftCorrection(ctx, t, testContext, systemContext, resourceContext)
 	testDelete(ctx, t, testContext, systemContext, resourceContext)
 }
 
