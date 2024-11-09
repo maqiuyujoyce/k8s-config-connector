@@ -17,6 +17,7 @@ package privilegedaccessmanager
 import (
 	"context"
 	"fmt"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"reflect"
 	"strings"
 
@@ -312,22 +313,78 @@ func (a *Adapter) Update(ctx context.Context, updateOp *directbase.UpdateOperati
 	if mapCtx.Err() != nil {
 		return fmt.Errorf("error generating update mask: %w", mapCtx.Err())
 	}
-	sortPrincipalsInSpec(parsedActual)
+	//sortPrincipalsInSpec(parsedActual)
 	parsedDesired := a.desired.DeepCopy()
-	sortPrincipalsInSpec(&parsedDesired.Spec)
+	//sortPrincipalsInSpec(&parsedDesired.Spec)
 
 	if !reflect.DeepEqual(parsedActual.AdditionalNotificationTargets, parsedDesired.Spec.AdditionalNotificationTargets) {
 		log.V(2).Info("'spec.additionalNotificationTargets' field is updated (-old +new)", cmp.Diff(parsedActual.AdditionalNotificationTargets, parsedDesired.Spec.AdditionalNotificationTargets))
 		updateMask.Paths = append(updateMask.Paths, "additional_notification_targets")
 	}
-	if !reflect.DeepEqual(parsedActual.ApprovalWorkflow, parsedDesired.Spec.ApprovalWorkflow) {
-		log.V(2).Info("'spec.approvalWorkflow' field is updated (-old +new)", cmp.Diff(parsedActual.ApprovalWorkflow, parsedDesired.Spec.ApprovalWorkflow))
-		updateMask.Paths = append(updateMask.Paths, "approval_workflow")
+	if parsedActual.ApprovalWorkflow != nil || parsedDesired.Spec.ApprovalWorkflow != nil {
+		if parsedActual.ApprovalWorkflow == nil || parsedDesired.Spec.ApprovalWorkflow == nil {
+			log.V(2).Info("'spec.approvalWorkflow' field is updated (-old +new)", cmp.Diff(parsedActual.ApprovalWorkflow, parsedDesired.Spec.ApprovalWorkflow))
+			updateMask.Paths = append(updateMask.Paths, "approval_workflow")
+		} else if !reflect.DeepEqual(parsedActual.ApprovalWorkflow.ManualApprovals.RequireApproverJustification, parsedDesired.Spec.ApprovalWorkflow.ManualApprovals.RequireApproverJustification) {
+			log.V(2).Info("'spec.approvalWorkflow' field is updated (-old +new)", cmp.Diff(parsedActual.ApprovalWorkflow, parsedDesired.Spec.ApprovalWorkflow))
+			updateMask.Paths = append(updateMask.Paths, "approval_workflow")
+		} else if len(parsedActual.ApprovalWorkflow.ManualApprovals.Steps) != len(parsedDesired.Spec.ApprovalWorkflow.ManualApprovals.Steps) {
+			log.V(2).Info("'spec.approvalWorkflow' field is updated (-old +new)", cmp.Diff(parsedActual.ApprovalWorkflow, parsedDesired.Spec.ApprovalWorkflow))
+			updateMask.Paths = append(updateMask.Paths, "approval_workflow")
+		} else {
+		stepsLoop:
+			for i, as := range parsedActual.ApprovalWorkflow.ManualApprovals.Steps {
+				ds := parsedDesired.Spec.ApprovalWorkflow.ManualApprovals.Steps[i]
+				if len(as.Approvers) != len(ds.Approvers) {
+					log.V(2).Info("'spec.approvalWorkflow' field is updated (-old +new)", cmp.Diff(parsedActual.ApprovalWorkflow, parsedDesired.Spec.ApprovalWorkflow))
+					updateMask.Paths = append(updateMask.Paths, "approval_workflow")
+					break
+				}
+				for j, aa := range as.Approvers {
+					da := ds.Approvers[j]
+					ap := sets.New[string](aa.Principals...)
+					dp := sets.New[string](da.Principals...)
+					if !ap.Equal(dp) {
+						log.V(2).Info("'spec.approvalWorkflow' field is updated (-old +new)", cmp.Diff(parsedActual.ApprovalWorkflow, parsedDesired.Spec.ApprovalWorkflow))
+						updateMask.Paths = append(updateMask.Paths, "approval_workflow")
+						break stepsLoop
+					}
+				}
+				if !reflect.DeepEqual(as.ApprovalsNeeded, ds.ApprovalsNeeded) {
+					log.V(2).Info("'spec.approvalWorkflow' field is updated (-old +new)", cmp.Diff(parsedActual.ApprovalWorkflow, parsedDesired.Spec.ApprovalWorkflow))
+					updateMask.Paths = append(updateMask.Paths, "approval_workflow")
+					break
+				}
+				if !reflect.DeepEqual(as.ApproverEmailRecipients, ds.ApproverEmailRecipients) {
+					log.V(2).Info("'spec.approvalWorkflow' field is updated (-old +new)", cmp.Diff(parsedActual.ApprovalWorkflow, parsedDesired.Spec.ApprovalWorkflow))
+					updateMask.Paths = append(updateMask.Paths, "approval_workflow")
+					break
+				}
+			}
+		}
 	}
-	if !reflect.DeepEqual(parsedActual.EligibleUsers, parsedDesired.Spec.EligibleUsers) {
+	//if !reflect.DeepEqual(parsedActual.ApprovalWorkflow, parsedDesired.Spec.ApprovalWorkflow) {
+	//	log.V(2).Info("'spec.approvalWorkflow' field is updated (-old +new)", cmp.Diff(parsedActual.ApprovalWorkflow, parsedDesired.Spec.ApprovalWorkflow))
+	//	updateMask.Paths = append(updateMask.Paths, "approval_workflow")
+	//}
+	if len(parsedActual.EligibleUsers) != len(a.desired.Spec.EligibleUsers) {
 		log.V(2).Info("'spec.eligibleUsers' field is updated (-old +new)", cmp.Diff(parsedActual.EligibleUsers, parsedDesired.Spec.EligibleUsers))
 		updateMask.Paths = append(updateMask.Paths, "eligible_users")
 	}
+	for i, aeu := range parsedActual.EligibleUsers {
+		deu := parsedDesired.Spec.EligibleUsers[i]
+		ap := sets.New[string](aeu.Principals...)
+		dp := sets.New[string](deu.Principals...)
+		if !ap.Equal(dp) {
+			log.V(2).Info("'spec.eligibleUsers' field is updated (-old +new)", cmp.Diff(parsedActual.EligibleUsers, parsedDesired.Spec.EligibleUsers))
+			updateMask.Paths = append(updateMask.Paths, "eligible_users")
+			break
+		}
+	}
+	//if !reflect.DeepEqual(parsedActual.EligibleUsers, parsedDesired.Spec.EligibleUsers) {
+	//	log.V(2).Info("'spec.eligibleUsers' field is updated (-old +new)", cmp.Diff(parsedActual.EligibleUsers, parsedDesired.Spec.EligibleUsers))
+	//	updateMask.Paths = append(updateMask.Paths, "eligible_users")
+	//}
 	if !reflect.DeepEqual(a.actual.MaxRequestDuration.AsDuration(), direct.StringDuration_ToProto(mapCtx, parsedDesired.Spec.MaxRequestDuration).AsDuration()) {
 		log.V(2).Info("'spec.maxRequestDuration' field is updated (-old +new)", cmp.Diff(a.actual.MaxRequestDuration.AsDuration(), direct.StringDuration_ToProto(mapCtx, parsedDesired.Spec.MaxRequestDuration).AsDuration()))
 		updateMask.Paths = append(updateMask.Paths, "max_request_duration")
@@ -342,6 +399,7 @@ func (a *Adapter) Update(ctx context.Context, updateOp *directbase.UpdateOperati
 	}
 	if len(updateMask.Paths) == 0 {
 		log.V(2).Info("underlying PrivilegedAccessManagerEntitlement already up to date", "name", a.id.FullyQualifiedName())
+		fmt.Printf("underlying PrivilegedAccessManagerEntitlement already up to date, name: %v", a.id.FullyQualifiedName())
 
 		status := &krm.PrivilegedAccessManagerEntitlementStatus{}
 		observedState := PrivilegedAccessManagerEntitlementStatusObservedState_FromProto(mapCtx, a.actual)
