@@ -97,6 +97,8 @@ manifests: generate
 # Format code
 .PHONY: fmt
 fmt:
+	# remove non-breaking white spaces
+	grep -rlZ $$'\xA0' ./dev ./pkg --include *.go | xargs -0 sed -i 's/\xC2\xA0/ /g'
 	mockgcp/dev/fix-gofmt
 	make -C operator fmt
 	dev/tasks/fix-gofmt
