@@ -1,6 +1,6 @@
 I am trying to create a test case for mockgcp.
 
-A good test case for mockgcp does the basic operations on a GCP resource by using gcloud to create, list, describe and delete the resource.  It can also do a simple update.
+A good test case for mockgcp does the basic operations on a GCP resource by using gcloud to create, list, describe and delete the resource.  It can also do a simple update.  Please make sure the update indeed works.
 
 For example, if asked to create a mockgcp test for the gcloud commands under `gcloud pubsub topics`, we create the file mockpubsub/testdata/topic/crud/script.yaml with the following contents:
 

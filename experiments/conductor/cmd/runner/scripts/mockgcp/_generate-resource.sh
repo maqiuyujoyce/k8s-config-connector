@@ -25,20 +25,24 @@ set -o pipefail
 export GCLOUD_COMMAND="gcloud composer environments"
 export SERVICE=composer
 export RESOURCE=environment
+export PROTO_PACKAGE=./third_party/googleapis/google/cloud/orchestration/airflow/service/v1/environments.proto
 export WORKDIR=/usr/local/google/home/maqiuyu/go/src/github.com/maqiuyujoyce/3-k8s-config-connector
+export PROTO_SERVICE=google.cloud.orchestration.airflow.service.v1.Environments
+export PROTO_MESSAGE=google.cloud.orchestration.airflow.service.v1.Environment
+export HTTP_HOST=composer.googleapis.com
+export PATH=${PATH}:/usr/local/google/home/maqiuyu/go/src/github.com/maqiuyujoyce/2-k8s-config-connector/dev/tools/controllerbuilder/cmd/codebot:/usr/local/google/home/maqiuyu/go/src/github.com/maqiuyujoyce/2-k8s-config-connector/dev/tools/controllerbuilder
+
 export BRANCH_NAME=gcloud_${SERVICE}_${RESOURCE}
 export LOG_DIR=/tmp/conductor/${BRANCH_NAME}
-export PATH=${PATH}:/usr/local/google/home/maqiuyu/go/src/github.com/maqiuyujoyce/2-k8s-config-connector/dev/tools/controllerbuilder/cmd/codebot
 
 export EXPECTED_PATH=mock${SERVICE}/testdata/${RESOURCE}/crud
-export PROTO_PACKAGE=./third_party/googleapis/google/cloud/orchestration/airflow/service/v1/environments.proto
 mkdir -p ${WORKDIR}
-#echo "./01-generate-script.sh..."
-#./01-generate-script.sh
+echo "./01-generate-script.sh..."
+./01-generate-script.sh
 
 export RUN_TEST=${EXPECTED_PATH}
 echo "./02-run-script-real-gcp.sh..."
-./02-run-script-real-gcp.sh 
+./02-run-script-real-gcp.sh
 
 echo "./03a-add-to-makefile.sh..."
 ./03a-add-to-makefile.sh

@@ -51,7 +51,7 @@ if [[ -z "${PROTO_SERVICE}" ]]; then
   exit 1
 fi
 if [[ -z "${PROTO_MESSAGE}" ]]; then
-  echo "PROTO_SERVICE is required"
+  echo "PROTO_MESSAGE is required"
   exit 1
 fi
 if [[ -z "${HTTP_HOST}" ]]; then
@@ -78,7 +78,7 @@ mkdir -p mock${SERVICE}
 
 if [[ ! -e mock${SERVICE}/service.go ]]; then
 
-controllerbuilder prompt --src-dir ~/kcc/k8s-config-connector --proto-dir ~/kcc/k8s-config-connector/.build/third_party/googleapis/ <<EOF > mock${SERVICE}/service.go
+controllerbuilder prompt --src-dir ${REPO_ROOT} --proto-dir ${REPO_ROOT}/mockgcp/third_party/googleapis/ <<EOF > mock${SERVICE}/service.go
 // +tool:mockgcp-service
 // http.host: ${HTTP_HOST}
 // proto.service: ${PROTO_SERVICE}
@@ -87,7 +87,7 @@ EOF
 fi
 
 
-controllerbuilder prompt --src-dir ~/kcc/k8s-config-connector --proto-dir ~/kcc/k8s-config-connector/.build/third_party/googleapis/ <<EOF > mock${SERVICE}/${RESOURCE}.go
+controllerbuilder prompt --src-dir ${REPO_ROOT} --proto-dir ${REPO_ROOT}/mockgcp/third_party/googleapis/ <<EOF > mock${SERVICE}/${RESOURCE}.go
 // +tool:mockgcp-support
 // proto.service: ${PROTO_SERVICE}
 // proto.message: ${PROTO_MESSAGE}
@@ -96,7 +96,7 @@ EOF
 cat ${PROMPT_DIR}/03-add-service.prompt | \
     envsubst '$SERVICE' > ${LOG_DIR}/03-add-service.prompt
 
-codebot --prompt=${LOG_DIR}/03-add-service.prompt
+codebot --prompt=${LOG_DIR}/03-add-service.prompt --ui-type=prompt
 
 
 git status
