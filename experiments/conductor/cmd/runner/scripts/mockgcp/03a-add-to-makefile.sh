@@ -67,12 +67,17 @@ git add Makefile
 git add .
 git commit -m "mockgcp: update Makefile for ${PROTO_PACKAGE}"
 
-make generate-grpc-for-google-protos
+make gen-proto-no-fixup
 
-git add .
-git commit -m "autogen: updated GRPC/proto dependencies for ${PROTO_PACKAGE}"
+cat ${PROMPT_DIR}/03-clean-up-unrelated-files.prompt | \
+    envsubst '$PROTO_PACKAGE' > ${LOG_DIR}/03-clean-up-unrelated-files.prompt
 
-echo "Done"
+codebot --prompt=${LOG_DIR}/03-clean-up-unrelated-files.prompt --ui-type=prompt
+
+#git add .
+#git commit -m "autogen: updated GRPC/proto dependencies for ${PROTO_PACKAGE}"
+#
+#echo "Done"
 
 
 

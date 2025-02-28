@@ -1,0 +1,7 @@
+Many new changes just happened due to a make command and I only need a subset of them that is related to ${PROTO_PACKAGE}. Please revert new changes not related to ${PROTO_PACKAGE}.
+
+Hints:
+
+* Use the RunTerminalCommand command `git diff` to find out the new changes.
+
+* Use the RunTerminalCommand command `git restore [filename]` or `git clean -f [filename]` to clean up the changes that are not related to ${PROTO_PACKAGE}.

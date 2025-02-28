@@ -48,7 +48,7 @@ cd ${REPO_ROOT}
 git co master
 git co ${BRANCH_NAME}
 
-controllerbuilder prompt --src-dir ~/kcc/k8s-config-connector --proto-dir ~/kcc/k8s-config-connector/.build/third_party/googleapis/ <<EOF > pkg/controller/direct/${SERVICE}/${RESOURCE}_fuzzer.go
+go run ./dev/tools/controllerbuilder/main.go prompt --src-dir ${REPO_ROOT} --proto-dir ${REPO_ROOT}/mockgcp/third_party/googleapis/ <<EOF > pkg/controller/direct/${SERVICE}/${RESOURCE}_fuzzer.go
 // +tool:fuzz-gen
 // proto.message: ${PROTO_MESSAGE}
 EOF
@@ -64,6 +64,6 @@ EOF
 
 git status
 git add .
-git commit -m ""${CRD_KIND}: Create fuzz test"
+git commit -m "${CRD_KIND}: Create fuzz test"
 
 echo "Done"

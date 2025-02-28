@@ -37,18 +37,18 @@ export LOG_DIR=/tmp/conductor/${BRANCH_NAME}
 
 export EXPECTED_PATH=mock${SERVICE}/testdata/${RESOURCE}/crud
 mkdir -p ${WORKDIR}
-echo "./01-generate-script.sh..."
-./01-generate-script.sh
+#echo "./01-generate-script.sh..."
+#./01-generate-script.sh
 
 export RUN_TEST=${EXPECTED_PATH}
-echo "./02-run-script-real-gcp.sh..."
-./02-run-script-real-gcp.sh
+#echo "./02-run-script-real-gcp.sh..."
+#./02-run-script-real-gcp.sh
 
-echo "./03a-add-to-makefile.sh..."
-./03a-add-to-makefile.sh
+#echo "./03a-add-to-makefile.sh..."
+#./03a-add-to-makefile.sh
 
-echo "./03-implement-mocks.sh..."
-./03-implement-mocks.sh
+#echo "./03-implement-mocks.sh..."
+#./03-implement-mocks.sh
 
 echo "./04-run-script-mockgcp.sh..."
 ./04-run-script-mockgcp.sh

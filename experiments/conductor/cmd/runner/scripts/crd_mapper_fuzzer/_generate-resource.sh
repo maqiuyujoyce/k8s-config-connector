@@ -17,17 +17,28 @@
 set -o errexit
 set -o nounset
 set -o pipefail
-
+set -x
 
 # TODO: Can we infer / default RESOURCE from PROTO_MESSAGE
+export SERVICE=composer
+export RESOURCE=environment
+export CRD_KIND=ComposerEnvironment
+export CRD_VERSION=v1alpha1
+export CRD_GROUP=composer.cnrm.cloud.google.com
+export PROTO_PACKAGE=./third_party/googleapis/google/cloud/orchestration/airflow/service/v1/environments.proto
+export WORKDIR=/usr/local/google/home/maqiuyu/go/src/github.com/maqiuyujoyce/3-k8s-config-connector
+# This time the PROTO_SERVICE is the prefix of the PROTO_MESSAGE.
+export PROTO_SERVICE=google.cloud.orchestration.airflow.service.v1
+export PROTO_RESOURCE=Environment
+export PROTO_MESSAGE=google.cloud.orchestration.airflow.service.v1.Environment
+export PATH=${PATH}:/usr/local/google/home/maqiuyu/go/src/github.com/maqiuyujoyce/2-k8s-config-connector/dev/tools/controllerbuilder/cmd/codebot:/usr/local/google/home/maqiuyu/go/src/github.com/maqiuyujoyce/2-k8s-config-connector/dev/tools/controllerbuilder
 
-export WORKDIR=~/kccai/work1/
 export BRANCH_NAME=types_${SERVICE}_${CRD_KIND}
 export LOG_DIR=/tmp/conductor/${BRANCH_NAME}
 
-./01-write-generator-script.sh
-
-./02-generate-spec-and-status.sh
+#./01-write-generator-script.sh
+#
+#./02-generate-spec-and-status.sh
 
 ./03-generate-fuzzer.sh
 

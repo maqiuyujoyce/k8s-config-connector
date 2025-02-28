@@ -62,6 +62,7 @@ echo "Running test"
 # HACK: refresh token
 gcloud auth print-access-token > /dev/null
 # We ignore test failures, because we expect the golden output to be volatile at this stage
+# TODO: Test should fail if the gcloud command fails to run.
 (go test ./mockgcptests -v -run TestScripts/${RUN_TEST} --timeout=4800s || true) | tee ${LOG_DIR}/test-realgcp.log
 
 git status

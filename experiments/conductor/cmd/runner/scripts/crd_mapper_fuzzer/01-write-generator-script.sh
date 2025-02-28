@@ -60,6 +60,7 @@ cat > generate.sh <<EOF
 set -o errexit
 set -o nounset
 set -o pipefail
+set -x
 
 REPO_ROOT="\$(git rev-parse --show-toplevel)"
 cd \${REPO_ROOT}/dev/tools/controllerbuilder

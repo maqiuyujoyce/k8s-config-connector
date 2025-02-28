@@ -54,7 +54,7 @@ cd apis/${SERVICE}/${CRD_VERSION}
 # TODO: Generate spec and status separately
 # TODO: lower case (but it's nice right now because it always fails compilation)
 # TODO: Auto-exclude any examples with the same proto??
-controllerbuilder prompt --src-dir ~/kcc/k8s-config-connector --proto-dir ~/kcc/k8s-config-connector/.build/third_party/googleapis/ <<EOF >> ${RESOURCE}_types.go
+go run ../../../dev/tools/controllerbuilder/main.go prompt --src-dir ${REPO_ROOT} --proto-dir ${REPO_ROOT}/mockgcp/third_party/googleapis/ <<EOF >> ${RESOURCE}_types.go
 // +kcc:proto=${PROTO_SERVICE}.${PROTO_RESOURCE}
 EOF
 
