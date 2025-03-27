@@ -1,0 +1,614 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    cnrm.cloud.google.com/version: 0.0.0-dev
+  creationTimestamp: null
+  labels:
+    cnrm.cloud.google.com/managed-by-kcc: "true"
+    cnrm.cloud.google.com/system: "true"
+  name: colabschedules.colab.cnrm.cloud.google.com
+spec:
+  group: colab.cnrm.cloud.google.com
+  names:
+    categories:
+    - gcp
+    kind: ColabSchedule
+    listKind: ColabScheduleList
+    plural: colabschedules
+    shortNames:
+    - gcpcolabschedule
+    - gcpcolabschedules
+    singular: colabschedule
+  preserveUnknownFields: false
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .metadata.creationTimestamp
+      name: Age
+      type: date
+    - description: When 'True', the most recent reconcile of the resource succeeded
+      jsonPath: .status.conditions[?(@.type=='Ready')].status
+      name: Ready
+      type: string
+    - description: The reason for the value in 'Ready'
+      jsonPath: .status.conditions[?(@.type=='Ready')].reason
+      name: Status
+      type: string
+    - description: The last transition time for the value in 'Status'
+      jsonPath: .status.conditions[?(@.type=='Ready')].lastTransitionTime
+      name: Status Age
+      type: date
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: ColabSchedule is the Schema for the ColabSchedule API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: ColabScheduleSpec defines the desired state of ColabSchedule
+            properties:
+              allowQueueing:
+                description: Optional. Whether new scheduled runs can be queued when
+                  max_concurrent_runs limit is reached. If set to true, new runs will
+                  be queued instead of skipped. Default to false.
+                type: boolean
+              createModelMonitoringJobRequest:
+                description: Request for [ModelMonitoringService.CreateModelMonitoringJob][google.cloud.aiplatform.v1beta1.ModelMonitoringService.CreateModelMonitoringJob].
+                properties:
+                  modelMonitoringJobID:
+                    description: |-
+                      Optional. The ID to use for the Model Monitoring Job, which will become the
+                       final component of the model monitoring job resource name.
+
+                       The maximum length is 63 characters, and valid characters are
+                       `/^[a-z]([a-z0-9-]{0,61}[a-z0-9])?$/`.
+                    type: string
+                type: object
+              createNotebookExecutionJobRequest:
+                description: Request for [NotebookService.CreateNotebookExecutionJob][google.cloud.aiplatform.v1beta1.NotebookService.CreateNotebookExecutionJob].
+                properties:
+                  notebookExecutionJobID:
+                    description: Optional. User specified ID for the NotebookExecutionJob.
+                    type: string
+                type: object
+              createPipelineJobRequest:
+                description: 'Request for [PipelineService.CreatePipelineJob][google.cloud.aiplatform.v1beta1.PipelineService.CreatePipelineJob].
+                  CreatePipelineJobRequest.parent field is required (format: projects/{project}/locations/{location}).'
+                properties:
+                  pipelineJobID:
+                    description: |-
+                      The ID to use for the PipelineJob, which will become the final component of
+                       the PipelineJob name. If not provided, an ID will be automatically
+                       generated.
+
+                       This value should be less than 128 characters, and valid characters
+                       are `/[a-z][0-9]-/`.
+                    type: string
+                type: object
+              cron:
+                description: 'Cron schedule (https://en.wikipedia.org/wiki/Cron) to
+                  launch scheduled runs. To explicitly set a timezone to the cron
+                  tab, apply a prefix in the cron tab: "CRON_TZ=${IANA_TIME_ZONE}"
+                  or "TZ=${IANA_TIME_ZONE}". The ${IANA_TIME_ZONE} may only be a valid
+                  string from IANA time zone database. For example, "CRON_TZ=America/New_York
+                  1 * * * *", or "TZ=America/New_York 1 * * * *".'
+                type: string
+              displayName:
+                description: Required. User provided name of the Schedule. The name
+                  can be up to 128 characters long and can consist of any UTF-8 characters.
+                type: string
+              endTime:
+                description: Optional. Timestamp after which no new runs can be scheduled.
+                  If specified, The schedule will be completed when either end_time
+                  is reached or when scheduled_run_count >= max_run_count. If not
+                  specified, new runs will keep getting scheduled until this Schedule
+                  is paused or deleted. Already scheduled runs will be allowed to
+                  complete. Unset if not specified.
+                type: string
+              maxConcurrentRunCount:
+                description: Required. Maximum number of runs that can be started
+                  concurrently for this Schedule. This is the limit for starting the
+                  scheduled requests and not the execution of the operations/jobs
+                  created by the requests (if applicable).
+                format: int64
+                type: integer
+              maxRunCount:
+                description: Optional. Maximum run count of the schedule. If specified,
+                  The schedule will be completed when either started_run_count >=
+                  max_run_count or when end_time is reached. If not specified, new
+                  runs will keep getting scheduled until this Schedule is paused or
+                  deleted. Already scheduled runs will be allowed to complete. Unset
+                  if not specified.
+                format: int64
+                type: integer
+              resourceID:
+                description: The ColabSchedule name. If not given, the metadata.name
+                  will be used.
+                type: string
+              startTime:
+                description: Optional. Timestamp after which the first run can be
+                  scheduled. Default to Schedule create time if not specified.
+                type: string
+            required:
+            - displayName
+            - maxConcurrentRunCount
+            type: object
+          status:
+            description: ColabScheduleStatus defines the config connector machine
+              state of ColabSchedule
+            properties:
+              conditions:
+                description: Conditions represent the latest available observations
+                  of the object's current state.
+                items:
+                  properties:
+                    lastTransitionTime:
+                      description: Last time the condition transitioned from one status
+                        to another.
+                      type: string
+                    message:
+                      description: Human-readable message indicating details about
+                        last transition.
+                      type: string
+                    reason:
+                      description: Unique, one-word, CamelCase reason for the condition's
+                        last transition.
+                      type: string
+                    status:
+                      description: Status is the status of the condition. Can be True,
+                        False, Unknown.
+                      type: string
+                    type:
+                      description: Type is the type of the condition.
+                      type: string
+                  type: object
+                type: array
+              externalRef:
+                description: A unique specifier for the ColabSchedule resource in
+                  GCP.
+                type: string
+              observedGeneration:
+                description: ObservedGeneration is the generation of the resource
+                  that was most recently observed by the Config Connector controller.
+                  If this is equal to metadata.generation, then that means that the
+                  current reported status reflects the most recent desired state of
+                  the resource.
+                format: int64
+                type: integer
+              observedState:
+                description: ObservedState is the state of the resource as most recently
+                  observed in GCP.
+                properties:
+                  catchUp:
+                    description: Output only. Whether to backfill missed runs when
+                      the schedule is resumed from PAUSED state. If set to true, all
+                      missed runs will be scheduled. New runs will be scheduled after
+                      the backfill is complete. Default to false.
+                    type: boolean
+                  createModelMonitoringJobRequest:
+                    description: Request for [ModelMonitoringService.CreateModelMonitoringJob][google.cloud.aiplatform.v1beta1.ModelMonitoringService.CreateModelMonitoringJob].
+                    properties:
+                      modelMonitoringJob:
+                        description: Required. The ModelMonitoringJob to create
+                        properties:
+                          createTime:
+                            description: Output only. Timestamp when this ModelMonitoringJob
+                              was created.
+                            type: string
+                          jobExecutionDetail:
+                            description: Output only. Execution results for all the
+                              monitoring objectives.
+                            properties:
+                              baselineDatasets:
+                                description: Processed baseline datasets.
+                                items:
+                                  properties:
+                                    location:
+                                      description: Actual data location of the processed
+                                        dataset.
+                                      type: string
+                                    timeRange:
+                                      description: Dataset time range information
+                                        if any.
+                                      properties:
+                                        endTime:
+                                          description: |-
+                                            Optional. Exclusive end of the interval.
+
+                                             If specified, a Timestamp matching this interval will have to be before the
+                                             end.
+                                          type: string
+                                        startTime:
+                                          description: |-
+                                            Optional. Inclusive start of the interval.
+
+                                             If specified, a Timestamp matching this interval will have to be the same
+                                             or after the start.
+                                          type: string
+                                      type: object
+                                  type: object
+                                type: array
+                              error:
+                                description: Additional job error status.
+                                properties:
+                                  code:
+                                    description: The status code, which should be
+                                      an enum value of [google.rpc.Code][google.rpc.Code].
+                                    format: int32
+                                    type: integer
+                                  details:
+                                    description: A list of messages that carry the
+                                      error details.  There is a common set of message
+                                      types for APIs to use.
+                                    items:
+                                      properties:
+                                        typeURL:
+                                          description: |-
+                                            A URL/resource name that uniquely identifies the type of the serialized
+                                             protocol buffer message. This string must contain at least
+                                             one "/" character. The last segment of the URL's path must represent
+                                             the fully qualified name of the type (as in
+                                             `path/google.protobuf.Duration`). The name should be in a canonical form
+                                             (e.g., leading "." is not accepted).
+
+                                             In practice, teams usually precompile into the binary all types that they
+                                             expect it to use in the context of Any. However, for URLs which use the
+                                             scheme `http`, `https`, or no scheme, one can optionally set up a type
+                                             server that maps type URLs to message definitions as follows:
+
+                                             * If no scheme is provided, `https` is assumed.
+                                             * An HTTP GET on the URL must yield a [google.protobuf.Type][]
+                                               value in binary format, or produce an error.
+                                             * Applications are allowed to cache lookup results based on the
+                                               URL, or have them precompiled into a binary to avoid any
+                                               lookup. Therefore, binary compatibility needs to be preserved
+                                               on changes to types. (Use versioned type names to manage
+                                               breaking changes.)
+
+                                             Note: this functionality is not currently available in the official
+                                             protobuf release, and it is not used for type URLs beginning with
+                                             type.googleapis.com.
+
+                                             Schemes other than `http`, `https` (or the empty scheme) might be
+                                             used with implementation specific semantics.
+                                          type: string
+                                        value:
+                                          description: Must be a valid serialized
+                                            protocol buffer of the above specified
+                                            type.
+                                          format: byte
+                                          type: string
+                                      type: object
+                                    type: array
+                                  message:
+                                    description: A developer-facing error message,
+                                      which should be in English. Any user-facing
+                                      error message should be localized and sent in
+                                      the [google.rpc.Status.details][google.rpc.Status.details]
+                                      field, or localized by the client.
+                                    type: string
+                                type: object
+                              targetDatasets:
+                                description: Processed target datasets.
+                                items:
+                                  properties:
+                                    location:
+                                      description: Actual data location of the processed
+                                        dataset.
+                                      type: string
+                                    timeRange:
+                                      description: Dataset time range information
+                                        if any.
+                                      properties:
+                                        endTime:
+                                          description: |-
+                                            Optional. Exclusive end of the interval.
+
+                                             If specified, a Timestamp matching this interval will have to be before the
+                                             end.
+                                          type: string
+                                        startTime:
+                                          description: |-
+                                            Optional. Inclusive start of the interval.
+
+                                             If specified, a Timestamp matching this interval will have to be the same
+                                             or after the start.
+                                          type: string
+                                      type: object
+                                  type: object
+                                type: array
+                            type: object
+                          name:
+                            description: 'Output only. Resource name of a ModelMonitoringJob.
+                              Format: `projects/{project_id}/locations/{location_id}/modelMonitors/{model_monitor_id}/modelMonitoringJobs/{model_monitoring_job_id}`'
+                            type: string
+                          schedule:
+                            description: Output only. Schedule resource name. It will
+                              only appear when this job is triggered by a schedule.
+                            type: string
+                          scheduleTime:
+                            description: Output only. Timestamp when this ModelMonitoringJob
+                              was scheduled. It will only appear when this job is
+                              triggered by a schedule.
+                            type: string
+                          state:
+                            description: Output only. The state of the monitoring
+                              job. * When the job is still creating, the state will
+                              be 'JOB_STATE_PENDING'. * Once the job is successfully
+                              created, the state will be 'JOB_STATE_RUNNING'. * Once
+                              the job is finished, the state will be one of 'JOB_STATE_FAILED',
+                              'JOB_STATE_SUCCEEDED', 'JOB_STATE_PARTIALLY_SUCCEEDED'.
+                            type: string
+                          updateTime:
+                            description: Output only. Timestamp when this ModelMonitoringJob
+                              was updated most recently.
+                            type: string
+                        type: object
+                    type: object
+                  createNotebookExecutionJobRequest:
+                    description: Request for [NotebookService.CreateNotebookExecutionJob][google.cloud.aiplatform.v1beta1.NotebookService.CreateNotebookExecutionJob].
+                    properties:
+                      notebookExecutionJob:
+                        description: Required. The NotebookExecutionJob to create.
+                        properties:
+                          createTime:
+                            description: Output only. Timestamp when this NotebookExecutionJob
+                              was created.
+                            type: string
+                          jobState:
+                            description: Output only. The state of the NotebookExecutionJob.
+                            type: string
+                          name:
+                            description: 'Output only. The resource name of this NotebookExecutionJob.
+                              Format: `projects/{project_id}/locations/{location}/notebookExecutionJobs/{job_id}`'
+                            type: string
+                          scheduleResourceName:
+                            description: 'Output only. The Schedule resource name
+                              if this job is triggered by one. Format: `projects/{project_id}/locations/{location}/schedules/{schedule_id}`'
+                            type: string
+                          status:
+                            description: Output only. Populated when the NotebookExecutionJob
+                              is completed. When there is an error during notebook
+                              execution, the error details are populated.
+                            properties:
+                              code:
+                                description: The status code, which should be an enum
+                                  value of [google.rpc.Code][google.rpc.Code].
+                                format: int32
+                                type: integer
+                              details:
+                                description: A list of messages that carry the error
+                                  details.  There is a common set of message types
+                                  for APIs to use.
+                                items:
+                                  properties:
+                                    typeURL:
+                                      description: |-
+                                        A URL/resource name that uniquely identifies the type of the serialized
+                                         protocol buffer message. This string must contain at least
+                                         one "/" character. The last segment of the URL's path must represent
+                                         the fully qualified name of the type (as in
+                                         `path/google.protobuf.Duration`). The name should be in a canonical form
+                                         (e.g., leading "." is not accepted).
+
+                                         In practice, teams usually precompile into the binary all types that they
+                                         expect it to use in the context of Any. However, for URLs which use the
+                                         scheme `http`, `https`, or no scheme, one can optionally set up a type
+                                         server that maps type URLs to message definitions as follows:
+
+                                         * If no scheme is provided, `https` is assumed.
+                                         * An HTTP GET on the URL must yield a [google.protobuf.Type][]
+                                           value in binary format, or produce an error.
+                                         * Applications are allowed to cache lookup results based on the
+                                           URL, or have them precompiled into a binary to avoid any
+                                           lookup. Therefore, binary compatibility needs to be preserved
+                                           on changes to types. (Use versioned type names to manage
+                                           breaking changes.)
+
+                                         Note: this functionality is not currently available in the official
+                                         protobuf release, and it is not used for type URLs beginning with
+                                         type.googleapis.com.
+
+                                         Schemes other than `http`, `https` (or the empty scheme) might be
+                                         used with implementation specific semantics.
+                                      type: string
+                                    value:
+                                      description: Must be a valid serialized protocol
+                                        buffer of the above specified type.
+                                      format: byte
+                                      type: string
+                                  type: object
+                                type: array
+                              message:
+                                description: A developer-facing error message, which
+                                  should be in English. Any user-facing error message
+                                  should be localized and sent in the [google.rpc.Status.details][google.rpc.Status.details]
+                                  field, or localized by the client.
+                                type: string
+                            type: object
+                          updateTime:
+                            description: Output only. Timestamp when this NotebookExecutionJob
+                              was most recently updated.
+                            type: string
+                        type: object
+                    type: object
+                  createPipelineJobRequest:
+                    description: 'Request for [PipelineService.CreatePipelineJob][google.cloud.aiplatform.v1beta1.PipelineService.CreatePipelineJob].
+                      CreatePipelineJobRequest.parent field is required (format: projects/{project}/locations/{location}).'
+                    properties:
+                      pipelineJob:
+                        description: Required. The PipelineJob to create.
+                        properties:
+                          createTime:
+                            description: Output only. Pipeline creation time.
+                            type: string
+                          endTime:
+                            description: Output only. Pipeline end time.
+                            type: string
+                          error:
+                            description: Output only. The error that occurred during
+                              pipeline execution. Only populated when the pipeline's
+                              state is FAILED or CANCELLED.
+                            properties:
+                              code:
+                                description: The status code, which should be an enum
+                                  value of [google.rpc.Code][google.rpc.Code].
+                                format: int32
+                                type: integer
+                              details:
+                                description: A list of messages that carry the error
+                                  details.  There is a common set of message types
+                                  for APIs to use.
+                                items:
+                                  properties:
+                                    typeURL:
+                                      description: |-
+                                        A URL/resource name that uniquely identifies the type of the serialized
+                                         protocol buffer message. This string must contain at least
+                                         one "/" character. The last segment of the URL's path must represent
+                                         the fully qualified name of the type (as in
+                                         `path/google.protobuf.Duration`). The name should be in a canonical form
+                                         (e.g., leading "." is not accepted).
+
+                                         In practice, teams usually precompile into the binary all types that they
+                                         expect it to use in the context of Any. However, for URLs which use the
+                                         scheme `http`, `https`, or no scheme, one can optionally set up a type
+                                         server that maps type URLs to message definitions as follows:
+
+                                         * If no scheme is provided, `https` is assumed.
+                                         * An HTTP GET on the URL must yield a [google.protobuf.Type][]
+                                           value in binary format, or produce an error.
+                                         * Applications are allowed to cache lookup results based on the
+                                           URL, or have them precompiled into a binary to avoid any
+                                           lookup. Therefore, binary compatibility needs to be preserved
+                                           on changes to types. (Use versioned type names to manage
+                                           breaking changes.)
+
+                                         Note: this functionality is not currently available in the official
+                                         protobuf release, and it is not used for type URLs beginning with
+                                         type.googleapis.com.
+
+                                         Schemes other than `http`, `https` (or the empty scheme) might be
+                                         used with implementation specific semantics.
+                                      type: string
+                                    value:
+                                      description: Must be a valid serialized protocol
+                                        buffer of the above specified type.
+                                      format: byte
+                                      type: string
+                                  type: object
+                                type: array
+                              message:
+                                description: A developer-facing error message, which
+                                  should be in English. Any user-facing error message
+                                  should be localized and sent in the [google.rpc.Status.details][google.rpc.Status.details]
+                                  field, or localized by the client.
+                                type: string
+                            type: object
+                          jobDetail:
+                            description: Output only. The details of pipeline run.
+                              Not available in the list view.
+                            type: object
+                          name:
+                            description: Output only. The resource name of the PipelineJob.
+                            type: string
+                          satisfiesPzi:
+                            description: Output only. Reserved for future use.
+                            type: boolean
+                          satisfiesPzs:
+                            description: Output only. Reserved for future use.
+                            type: boolean
+                          scheduleName:
+                            description: Output only. The schedule resource name.
+                              Only returned if the Pipeline is created by Schedule
+                              API.
+                            type: string
+                          startTime:
+                            description: Output only. Pipeline start time.
+                            type: string
+                          state:
+                            description: Output only. The detailed state of the job.
+                            type: string
+                          templateMetadata:
+                            description: Output only. Pipeline template metadata.
+                              Will fill up fields if [PipelineJob.template_uri][google.cloud.aiplatform.v1beta1.PipelineJob.template_uri]
+                              is from supported template registry.
+                            properties:
+                              version:
+                                description: |-
+                                  The version_name in artifact registry.
+
+                                   Will always be presented in output if the
+                                   [PipelineJob.template_uri][google.cloud.aiplatform.v1beta1.PipelineJob.template_uri]
+                                   is from supported template registry.
+
+                                   Format is "sha256:abcdef123456...".
+                                type: string
+                            type: object
+                          updateTime:
+                            description: Output only. Timestamp when this PipelineJob
+                              was most recently updated.
+                            type: string
+                        type: object
+                    type: object
+                  createTime:
+                    description: Output only. Timestamp when this Schedule was created.
+                    type: string
+                  lastPauseTime:
+                    description: Output only. Timestamp when this Schedule was last
+                      paused. Unset if never paused.
+                    type: string
+                  lastResumeTime:
+                    description: Output only. Timestamp when this Schedule was last
+                      resumed. Unset if never resumed from pause.
+                    type: string
+                  lastScheduledRunResponse:
+                    description: Output only. Response of the last scheduled run.
+                      This is the response for starting the scheduled requests and
+                      not the execution of the operations/jobs created by the requests
+                      (if applicable). Unset if no run has been scheduled yet.
+                    properties:
+                      runResponse:
+                        description: The response of the scheduled run.
+                        type: string
+                      scheduledRunTime:
+                        description: The scheduled run time based on the user-specified
+                          schedule.
+                        type: string
+                    type: object
+                  nextRunTime:
+                    description: Output only. Timestamp when this Schedule should
+                      schedule the next run. Having a next_run_time in the past means
+                      the runs are being started behind schedule.
+                    type: string
+                  startedRunCount:
+                    description: Output only. The number of runs started by this schedule.
+                    format: int64
+                    type: integer
+                  state:
+                    description: Output only. The state of this Schedule.
+                    type: string
+                  updateTime:
+                    description: Output only. Timestamp when this Schedule was updated.
+                    type: string
+                type: object
+            type: object
+        required:
+        - spec
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}

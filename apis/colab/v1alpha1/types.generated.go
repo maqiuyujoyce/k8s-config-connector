@@ -16,6 +16,8 @@
 // krm.group: colab.cnrm.cloud.google.com
 // krm.version: v1alpha1
 // proto.service: google.cloud.aiplatform.v1beta1
+// resource: ColabRuntimeTemplate:NotebookRuntimeTemplate
+// resource: ColabRuntime:NotebookRuntime
 // resource: ColabSchedule:Schedule
 
 package v1alpha1
@@ -191,64 +193,6 @@ type Context struct {
 	// Description of the Context
 	// +kcc:proto:field=google.cloud.aiplatform.v1beta1.Context.description
 	Description *string `json:"description,omitempty"`
-}
-
-// +kcc:proto=google.cloud.aiplatform.v1beta1.CreateModelMonitoringJobRequest
-type CreateModelMonitoringJobRequest struct {
-	// Required. The parent of the ModelMonitoringJob.
-	//  Format:
-	//  `projects/{project}/locations/{location}/modelMoniitors/{model_monitor}`
-	// +kcc:proto:field=google.cloud.aiplatform.v1beta1.CreateModelMonitoringJobRequest.parent
-	Parent *string `json:"parent,omitempty"`
-
-	// Required. The ModelMonitoringJob to create
-	// +kcc:proto:field=google.cloud.aiplatform.v1beta1.CreateModelMonitoringJobRequest.model_monitoring_job
-	ModelMonitoringJob *ModelMonitoringJob `json:"modelMonitoringJob,omitempty"`
-
-	// Optional. The ID to use for the Model Monitoring Job, which will become the
-	//  final component of the model monitoring job resource name.
-	//
-	//  The maximum length is 63 characters, and valid characters are
-	//  `/^[a-z]([a-z0-9-]{0,61}[a-z0-9])?$/`.
-	// +kcc:proto:field=google.cloud.aiplatform.v1beta1.CreateModelMonitoringJobRequest.model_monitoring_job_id
-	ModelMonitoringJobID *string `json:"modelMonitoringJobID,omitempty"`
-}
-
-// +kcc:proto=google.cloud.aiplatform.v1beta1.CreateNotebookExecutionJobRequest
-type CreateNotebookExecutionJobRequest struct {
-	// Required. The resource name of the Location to create the
-	//  NotebookExecutionJob. Format: `projects/{project}/locations/{location}`
-	// +kcc:proto:field=google.cloud.aiplatform.v1beta1.CreateNotebookExecutionJobRequest.parent
-	Parent *string `json:"parent,omitempty"`
-
-	// Required. The NotebookExecutionJob to create.
-	// +kcc:proto:field=google.cloud.aiplatform.v1beta1.CreateNotebookExecutionJobRequest.notebook_execution_job
-	NotebookExecutionJob *NotebookExecutionJob `json:"notebookExecutionJob,omitempty"`
-
-	// Optional. User specified ID for the NotebookExecutionJob.
-	// +kcc:proto:field=google.cloud.aiplatform.v1beta1.CreateNotebookExecutionJobRequest.notebook_execution_job_id
-	NotebookExecutionJobID *string `json:"notebookExecutionJobID,omitempty"`
-}
-
-// +kcc:proto=google.cloud.aiplatform.v1beta1.CreatePipelineJobRequest
-type CreatePipelineJobRequest struct {
-	// Required. The resource name of the Location to create the PipelineJob in.
-	//  Format: `projects/{project}/locations/{location}`
-	// +kcc:proto:field=google.cloud.aiplatform.v1beta1.CreatePipelineJobRequest.parent
-	Parent *string `json:"parent,omitempty"`
-
-	// Required. The PipelineJob to create.
-	// +kcc:proto:field=google.cloud.aiplatform.v1beta1.CreatePipelineJobRequest.pipeline_job
-	PipelineJob *PipelineJob `json:"pipelineJob,omitempty"`
-
-	// The ID to use for the PipelineJob, which will become the final component of
-	//  the PipelineJob name. If not provided, an ID will be automatically
-	//  generated.
-	//
-	//  This value should be less than 128 characters, and valid characters
-	//  are `/[a-z][0-9]-/`.
-	// +kcc:proto:field=google.cloud.aiplatform.v1beta1.CreatePipelineJobRequest.pipeline_job_id
-	PipelineJobID *string `json:"pipelineJobID,omitempty"`
 }
 
 // +kcc:proto=google.cloud.aiplatform.v1beta1.Examples
@@ -1070,6 +1014,15 @@ type ModelMonitoringSpec struct {
 	OutputSpec *ModelMonitoringOutputSpec `json:"outputSpec,omitempty"`
 }
 
+// +kcc:proto=google.cloud.aiplatform.v1beta1.NotebookEucConfig
+type NotebookEUCConfig struct {
+	// Input only. Whether EUC is disabled in this NotebookRuntimeTemplate.
+	//  In proto3, the default value of a boolean is false. In this way, by default
+	//  EUC will be enabled for NotebookRuntimeTemplate.
+	// +kcc:proto:field=google.cloud.aiplatform.v1beta1.NotebookEucConfig.euc_disabled
+	EUCDisabled *bool `json:"eucDisabled,omitempty"`
+}
+
 // +kcc:proto=google.cloud.aiplatform.v1beta1.NotebookExecutionJob
 type NotebookExecutionJob struct {
 	// The Dataform Repository pointing to a single file notebook repository.
@@ -1197,6 +1150,19 @@ type NotebookExecutionJob_GCSNotebookSource struct {
 type NotebookExecutionJob_WorkbenchRuntime struct {
 }
 
+// +kcc:proto=google.cloud.aiplatform.v1beta1.NotebookIdleShutdownConfig
+type NotebookIdleShutdownConfig struct {
+	// Required. Duration is accurate to the second. In Notebook, Idle Timeout is
+	//  accurate to minute so the range of idle_timeout (second) is: 10 * 60 ~ 1440
+	//  * 60.
+	// +kcc:proto:field=google.cloud.aiplatform.v1beta1.NotebookIdleShutdownConfig.idle_timeout
+	IdleTimeout *string `json:"idleTimeout,omitempty"`
+
+	// Whether Idle Shutdown is disabled in this NotebookRuntimeTemplate.
+	// +kcc:proto:field=google.cloud.aiplatform.v1beta1.NotebookIdleShutdownConfig.idle_shutdown_disabled
+	IdleShutdownDisabled *bool `json:"idleShutdownDisabled,omitempty"`
+}
+
 // +kcc:proto=google.cloud.aiplatform.v1beta1.PersistentDiskSpec
 type PersistentDiskSpec struct {
 	// Type of the disk (default is "pd-standard").
@@ -1317,42 +1283,6 @@ type PipelineJob struct {
 	//  specify the rerun config for each task.
 	// +kcc:proto:field=google.cloud.aiplatform.v1beta1.PipelineJob.pipeline_task_rerun_configs
 	PipelineTaskRerunConfigs []PipelineTaskRerunConfig `json:"pipelineTaskRerunConfigs,omitempty"`
-}
-
-// +kcc:proto=google.cloud.aiplatform.v1beta1.PipelineJob.RuntimeConfig
-type PipelineJob_RuntimeConfig struct {
-
-	// TODO: unsupported map type with key string and value message
-
-	// Required. A path in a Cloud Storage bucket, which will be treated as the
-	//  root output directory of the pipeline. It is used by the system to
-	//  generate the paths of output artifacts. The artifact paths are generated
-	//  with a sub-path pattern `{job_id}/{task_id}/{output_key}` under the
-	//  specified output directory. The service account specified in this
-	//  pipeline must have the `storage.objects.get` and `storage.objects.create`
-	//  permissions for this bucket.
-	// +kcc:proto:field=google.cloud.aiplatform.v1beta1.PipelineJob.RuntimeConfig.gcs_output_directory
-	GCSOutputDirectory *string `json:"gcsOutputDirectory,omitempty"`
-
-	// TODO: unsupported map type with key string and value message
-
-	// Represents the failure policy of a pipeline. Currently, the default of a
-	//  pipeline is that the pipeline will continue to run until no more tasks
-	//  can be executed, also known as PIPELINE_FAILURE_POLICY_FAIL_SLOW.
-	//  However, if a pipeline is set to PIPELINE_FAILURE_POLICY_FAIL_FAST, it
-	//  will stop scheduling any new tasks when a task has failed. Any scheduled
-	//  tasks will continue to completion.
-	// +kcc:proto:field=google.cloud.aiplatform.v1beta1.PipelineJob.RuntimeConfig.failure_policy
-	FailurePolicy *string `json:"failurePolicy,omitempty"`
-
-	// TODO: unsupported map type with key string and value message
-
-	// Optional. The default runtime for the PipelineJob. If not provided,
-	//  Vertex Custom Job(on demand) is used as the runtime. For Vertex Custom
-	//  Job, please refer to
-	//  https://cloud.google.com/vertex-ai/docs/training/overview.
-	// +kcc:proto:field=google.cloud.aiplatform.v1beta1.PipelineJob.RuntimeConfig.default_runtime
-	DefaultRuntime *PipelineJob_RuntimeConfig_DefaultRuntime `json:"defaultRuntime,omitempty"`
 }
 
 // +kcc:proto=google.cloud.aiplatform.v1beta1.PipelineJob.RuntimeConfig.DefaultRuntime
@@ -1557,80 +1487,6 @@ type SampledShapleyAttribution struct {
 	PathCount *int32 `json:"pathCount,omitempty"`
 }
 
-// +kcc:proto=google.cloud.aiplatform.v1beta1.Schedule
-type Schedule struct {
-	// Cron schedule (https://en.wikipedia.org/wiki/Cron) to launch scheduled
-	//  runs. To explicitly set a timezone to the cron tab, apply a prefix in the
-	//  cron tab: "CRON_TZ=${IANA_TIME_ZONE}" or "TZ=${IANA_TIME_ZONE}".
-	//  The ${IANA_TIME_ZONE} may only be a valid string from IANA time zone
-	//  database. For example, "CRON_TZ=America/New_York 1 * * * *", or
-	//  "TZ=America/New_York 1 * * * *".
-	// +kcc:proto:field=google.cloud.aiplatform.v1beta1.Schedule.cron
-	Cron *string `json:"cron,omitempty"`
-
-	// Request for
-	//  [PipelineService.CreatePipelineJob][google.cloud.aiplatform.v1beta1.PipelineService.CreatePipelineJob].
-	//  CreatePipelineJobRequest.parent field is required (format:
-	//  projects/{project}/locations/{location}).
-	// +kcc:proto:field=google.cloud.aiplatform.v1beta1.Schedule.create_pipeline_job_request
-	CreatePipelineJobRequest *CreatePipelineJobRequest `json:"createPipelineJobRequest,omitempty"`
-
-	// Request for
-	//  [ModelMonitoringService.CreateModelMonitoringJob][google.cloud.aiplatform.v1beta1.ModelMonitoringService.CreateModelMonitoringJob].
-	// +kcc:proto:field=google.cloud.aiplatform.v1beta1.Schedule.create_model_monitoring_job_request
-	CreateModelMonitoringJobRequest *CreateModelMonitoringJobRequest `json:"createModelMonitoringJobRequest,omitempty"`
-
-	// Request for
-	//  [NotebookService.CreateNotebookExecutionJob][google.cloud.aiplatform.v1beta1.NotebookService.CreateNotebookExecutionJob].
-	// +kcc:proto:field=google.cloud.aiplatform.v1beta1.Schedule.create_notebook_execution_job_request
-	CreateNotebookExecutionJobRequest *CreateNotebookExecutionJobRequest `json:"createNotebookExecutionJobRequest,omitempty"`
-
-	// Immutable. The resource name of the Schedule.
-	// +kcc:proto:field=google.cloud.aiplatform.v1beta1.Schedule.name
-	Name *string `json:"name,omitempty"`
-
-	// Required. User provided name of the Schedule.
-	//  The name can be up to 128 characters long and can consist of any UTF-8
-	//  characters.
-	// +kcc:proto:field=google.cloud.aiplatform.v1beta1.Schedule.display_name
-	DisplayName *string `json:"displayName,omitempty"`
-
-	// Optional. Timestamp after which the first run can be scheduled.
-	//  Default to Schedule create time if not specified.
-	// +kcc:proto:field=google.cloud.aiplatform.v1beta1.Schedule.start_time
-	StartTime *string `json:"startTime,omitempty"`
-
-	// Optional. Timestamp after which no new runs can be scheduled.
-	//  If specified, The schedule will be completed when either
-	//  end_time is reached or when scheduled_run_count >= max_run_count.
-	//  If not specified, new runs will keep getting scheduled until this Schedule
-	//  is paused or deleted. Already scheduled runs will be allowed to complete.
-	//  Unset if not specified.
-	// +kcc:proto:field=google.cloud.aiplatform.v1beta1.Schedule.end_time
-	EndTime *string `json:"endTime,omitempty"`
-
-	// Optional. Maximum run count of the schedule.
-	//  If specified, The schedule will be completed when either
-	//  started_run_count >= max_run_count or when end_time is reached.
-	//  If not specified, new runs will keep getting scheduled until this Schedule
-	//  is paused or deleted. Already scheduled runs will be allowed to complete.
-	//  Unset if not specified.
-	// +kcc:proto:field=google.cloud.aiplatform.v1beta1.Schedule.max_run_count
-	MaxRunCount *int64 `json:"maxRunCount,omitempty"`
-
-	// Required. Maximum number of runs that can be started concurrently for this
-	//  Schedule. This is the limit for starting the scheduled requests and not the
-	//  execution of the operations/jobs created by the requests (if applicable).
-	// +kcc:proto:field=google.cloud.aiplatform.v1beta1.Schedule.max_concurrent_run_count
-	MaxConcurrentRunCount *int64 `json:"maxConcurrentRunCount,omitempty"`
-
-	// Optional. Whether new scheduled runs can be queued when max_concurrent_runs
-	//  limit is reached. If set to true, new runs will be queued instead of
-	//  skipped. Default to false.
-	// +kcc:proto:field=google.cloud.aiplatform.v1beta1.Schedule.allow_queueing
-	AllowQueueing *bool `json:"allowQueueing,omitempty"`
-}
-
 // +kcc:proto=google.cloud.aiplatform.v1beta1.Schedule.RunResponse
 type Schedule_RunResponse struct {
 	// The scheduled run time based on the user-specified schedule.
@@ -1640,6 +1496,19 @@ type Schedule_RunResponse struct {
 	// The response of the scheduled run.
 	// +kcc:proto:field=google.cloud.aiplatform.v1beta1.Schedule.RunResponse.run_response
 	RunResponse *string `json:"runResponse,omitempty"`
+}
+
+// +kcc:proto=google.cloud.aiplatform.v1beta1.ShieldedVmConfig
+type ShieldedVMConfig struct {
+	// Defines whether the instance has [Secure
+	//  Boot](https://cloud.google.com/compute/shielded-vm/docs/shielded-vm#secure-boot)
+	//  enabled.
+	//
+	//  Secure Boot helps ensure that the system only runs authentic software by
+	//  verifying the digital signature of all boot components, and halting the
+	//  boot process if signature verification fails.
+	// +kcc:proto:field=google.cloud.aiplatform.v1beta1.ShieldedVmConfig.enable_secure_boot
+	EnableSecureBoot *bool `json:"enableSecureBoot,omitempty"`
 }
 
 // +kcc:proto=google.cloud.aiplatform.v1beta1.SmoothGradConfig
@@ -1677,21 +1546,6 @@ type SmoothGradConfig struct {
 	//  Valid range of its value is [1, 50]. Defaults to 3.
 	// +kcc:proto:field=google.cloud.aiplatform.v1beta1.SmoothGradConfig.noisy_sample_count
 	NoisySampleCount *int32 `json:"noisySampleCount,omitempty"`
-}
-
-// +kcc:proto=google.cloud.aiplatform.v1beta1.Value
-type Value struct {
-	// An integer value.
-	// +kcc:proto:field=google.cloud.aiplatform.v1beta1.Value.int_value
-	IntValue *int64 `json:"intValue,omitempty"`
-
-	// A double value.
-	// +kcc:proto:field=google.cloud.aiplatform.v1beta1.Value.double_value
-	DoubleValue *float64 `json:"doubleValue,omitempty"`
-
-	// A string value.
-	// +kcc:proto:field=google.cloud.aiplatform.v1beta1.Value.string_value
-	StringValue *string `json:"stringValue,omitempty"`
 }
 
 // +kcc:proto=google.cloud.aiplatform.v1beta1.XraiAttribution
@@ -1847,27 +1701,6 @@ type ContextObservedState struct {
 	ParentContexts []string `json:"parentContexts,omitempty"`
 }
 
-// +kcc:proto=google.cloud.aiplatform.v1beta1.CreateModelMonitoringJobRequest
-type CreateModelMonitoringJobRequestObservedState struct {
-	// Required. The ModelMonitoringJob to create
-	// +kcc:proto:field=google.cloud.aiplatform.v1beta1.CreateModelMonitoringJobRequest.model_monitoring_job
-	ModelMonitoringJob *ModelMonitoringJobObservedState `json:"modelMonitoringJob,omitempty"`
-}
-
-// +kcc:proto=google.cloud.aiplatform.v1beta1.CreateNotebookExecutionJobRequest
-type CreateNotebookExecutionJobRequestObservedState struct {
-	// Required. The NotebookExecutionJob to create.
-	// +kcc:proto:field=google.cloud.aiplatform.v1beta1.CreateNotebookExecutionJobRequest.notebook_execution_job
-	NotebookExecutionJob *NotebookExecutionJobObservedState `json:"notebookExecutionJob,omitempty"`
-}
-
-// +kcc:proto=google.cloud.aiplatform.v1beta1.CreatePipelineJobRequest
-type CreatePipelineJobRequestObservedState struct {
-	// Required. The PipelineJob to create.
-	// +kcc:proto:field=google.cloud.aiplatform.v1beta1.CreatePipelineJobRequest.pipeline_job
-	PipelineJob *PipelineJobObservedState `json:"pipelineJob,omitempty"`
-}
-
 // +kcc:proto=google.cloud.aiplatform.v1beta1.Execution
 type ExecutionObservedState struct {
 	// Output only. The resource name of the Execution.
@@ -1922,6 +1755,19 @@ type ModelMonitoringJobObservedState struct {
 	//  only appear when this job is triggered by a schedule.
 	// +kcc:proto:field=google.cloud.aiplatform.v1beta1.ModelMonitoringJob.schedule_time
 	ScheduleTime *string `json:"scheduleTime,omitempty"`
+}
+
+// +kcc:proto=google.cloud.aiplatform.v1beta1.NotebookEucConfig
+type NotebookEUCConfigObservedState struct {
+	// Output only. Whether ActAs check is bypassed for service account attached
+	//  to the VM. If false, we need ActAs check for the default Compute Engine
+	//  Service account. When a Runtime is created, a VM is allocated using Default
+	//  Compute Engine Service Account. Any user requesting to use this Runtime
+	//  requires Service Account User (ActAs) permission over this SA. If true,
+	//  Runtime owner is using EUC and does not require the above permission as VM
+	//  no longer use default Compute Engine SA, but a P4SA.
+	// +kcc:proto:field=google.cloud.aiplatform.v1beta1.NotebookEucConfig.bypass_actas_check
+	BypassActasCheck *bool `json:"bypassActasCheck,omitempty"`
 }
 
 // +kcc:proto=google.cloud.aiplatform.v1beta1.NotebookExecutionJob
@@ -2158,69 +2004,4 @@ type PipelineTaskExecutorDetail_CustomJobDetailObservedState struct {
 	//  the all attempts in chronological order.
 	// +kcc:proto:field=google.cloud.aiplatform.v1beta1.PipelineTaskExecutorDetail.CustomJobDetail.failed_jobs
 	FailedJobs []string `json:"failedJobs,omitempty"`
-}
-
-// +kcc:proto=google.cloud.aiplatform.v1beta1.Schedule
-type ScheduleObservedState struct {
-	// Request for
-	//  [PipelineService.CreatePipelineJob][google.cloud.aiplatform.v1beta1.PipelineService.CreatePipelineJob].
-	//  CreatePipelineJobRequest.parent field is required (format:
-	//  projects/{project}/locations/{location}).
-	// +kcc:proto:field=google.cloud.aiplatform.v1beta1.Schedule.create_pipeline_job_request
-	CreatePipelineJobRequest *CreatePipelineJobRequestObservedState `json:"createPipelineJobRequest,omitempty"`
-
-	// Request for
-	//  [ModelMonitoringService.CreateModelMonitoringJob][google.cloud.aiplatform.v1beta1.ModelMonitoringService.CreateModelMonitoringJob].
-	// +kcc:proto:field=google.cloud.aiplatform.v1beta1.Schedule.create_model_monitoring_job_request
-	CreateModelMonitoringJobRequest *CreateModelMonitoringJobRequestObservedState `json:"createModelMonitoringJobRequest,omitempty"`
-
-	// Request for
-	//  [NotebookService.CreateNotebookExecutionJob][google.cloud.aiplatform.v1beta1.NotebookService.CreateNotebookExecutionJob].
-	// +kcc:proto:field=google.cloud.aiplatform.v1beta1.Schedule.create_notebook_execution_job_request
-	CreateNotebookExecutionJobRequest *CreateNotebookExecutionJobRequestObservedState `json:"createNotebookExecutionJobRequest,omitempty"`
-
-	// Output only. The number of runs started by this schedule.
-	// +kcc:proto:field=google.cloud.aiplatform.v1beta1.Schedule.started_run_count
-	StartedRunCount *int64 `json:"startedRunCount,omitempty"`
-
-	// Output only. The state of this Schedule.
-	// +kcc:proto:field=google.cloud.aiplatform.v1beta1.Schedule.state
-	State *string `json:"state,omitempty"`
-
-	// Output only. Timestamp when this Schedule was created.
-	// +kcc:proto:field=google.cloud.aiplatform.v1beta1.Schedule.create_time
-	CreateTime *string `json:"createTime,omitempty"`
-
-	// Output only. Timestamp when this Schedule was updated.
-	// +kcc:proto:field=google.cloud.aiplatform.v1beta1.Schedule.update_time
-	UpdateTime *string `json:"updateTime,omitempty"`
-
-	// Output only. Timestamp when this Schedule should schedule the next run.
-	//  Having a next_run_time in the past means the runs are being started
-	//  behind schedule.
-	// +kcc:proto:field=google.cloud.aiplatform.v1beta1.Schedule.next_run_time
-	NextRunTime *string `json:"nextRunTime,omitempty"`
-
-	// Output only. Timestamp when this Schedule was last paused.
-	//  Unset if never paused.
-	// +kcc:proto:field=google.cloud.aiplatform.v1beta1.Schedule.last_pause_time
-	LastPauseTime *string `json:"lastPauseTime,omitempty"`
-
-	// Output only. Timestamp when this Schedule was last resumed.
-	//  Unset if never resumed from pause.
-	// +kcc:proto:field=google.cloud.aiplatform.v1beta1.Schedule.last_resume_time
-	LastResumeTime *string `json:"lastResumeTime,omitempty"`
-
-	// Output only. Whether to backfill missed runs when the schedule is resumed
-	//  from PAUSED state. If set to true, all missed runs will be scheduled. New
-	//  runs will be scheduled after the backfill is complete. Default to false.
-	// +kcc:proto:field=google.cloud.aiplatform.v1beta1.Schedule.catch_up
-	CatchUp *bool `json:"catchUp,omitempty"`
-
-	// Output only. Response of the last scheduled run.
-	//  This is the response for starting the scheduled requests and not the
-	//  execution of the operations/jobs created by the requests (if applicable).
-	//  Unset if no run has been scheduled yet.
-	// +kcc:proto:field=google.cloud.aiplatform.v1beta1.Schedule.last_scheduled_run_response
-	LastScheduledRunResponse *Schedule_RunResponse `json:"lastScheduledRunResponse,omitempty"`
 }
