@@ -1,0 +1,144 @@
+# Copyright 2025 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: bigquery.cnrm.cloud.google.com/v1beta1
+kind: BigQueryTable
+metadata:
+  name: bigquerytable-${uniqueId}
+  labels:
+    labelkey: "labelvalue-updated"
+spec:
+  datasetRef:
+    name: bigquerytable-${uniqueId}
+  friendlyName: BigQuery Table Updated
+  description: A BigQuery table, now updated.
+  expirationTime: 18000000000001
+  schema: |
+    [
+      {
+        "name": "name",
+        "type": "STRING",
+        "mode": "NULLABLE",
+        "description": "The name of the person"
+      },
+      {
+        "name": "post_abbr",
+        "type": "STRING",
+        "mode": "NULLABLE",
+        "description": "The state"
+      },
+      {
+        "name": "age",
+        "type": "INTEGER",
+        "mode": "NULLABLE",
+        "description": "The age of the person"
+      }
+    ]
+  timePartitioning:
+    type: DAY
+    expirationMs: 2592000001 # 30 days + 1 ms
+    field: dateField # This field is immutable once set
+  rangePartitioning:
+    field: integerField # This field is immutable once set
+    range:
+      start: 0 # This field is immutable once set
+      end: 1001
+      interval: 101
+  clustering:
+    - name
+    - age # Changed from post_abbr to age, ensure 'age' is in the schema
+  view:
+    query: "SELECT name, post_abbr FROM `project.dataset.table` WHERE name = 'test_user_updated'"
+    useLegacySql: true
+  materializedView:
+    query: "SELECT name, SUM(number) AS total_number FROM `project.dataset.table` WHERE name LIKE 'A%' GROUP BY name"
+    enableRefresh: false
+    refreshIntervalMs: 1800001 # 30 minutes + 1ms
+    allowNonIncrementalDefinition: true
+  externalDataConfiguration:
+    autodetect: false
+    sourceUris:
+      - "gs://bucket/path"
+      - "gs://bucket/path-updated"
+    schema: |
+      [
+        {
+          "name": "name",
+          "type": "STRING",
+          "mode": "NULLABLE",
+          "description": "The name of the person"
+        },
+        {
+          "name": "post_abbr",
+          "type": "STRING",
+          "mode": "NULLABLE",
+          "description": "The state"
+        },
+        {
+          "name": "extra_col_updated",
+          "type": "BOOLEAN",
+          "mode": "NULLABLE",
+          "description": "An updated extra column"
+        }
+      ]
+    sourceFormat: CSV
+    compression: NONE
+    connectionId: "connectionId-updated"
+    ignoreUnknownValues: false
+    maxBadRecords: 11
+    csvOptions:
+      quote: "'"
+      allowJaggedRows: false
+      allowQuotedNewlines: false
+      encoding: "ISO-8859-1"
+      fieldDelimiter: ";"
+      skipLeadingRows: 2
+    hivePartitioningOptions:
+      mode: STRINGS
+      sourceUriPrefix: "gs://bucket/path_to_table_updated/"
+      requirePartitionFilter: false
+    googleSheetsOptions:
+      skipLeadingRows: 2
+      range: "sheet1!A1:C20" # Changed range to include a new column C
+    avroOptions:
+      useAvroLogicalTypes: false
+    parquetOptions:
+      enumAsString: false
+      enableListInference: false
+    jsonOptions:
+      encoding: "UTF-16BE" # Changed encoding
+    referenceFileSchemaUri: "gs://bucket/schema-updated.json"
+    metadataCacheMode: "MANUAL"
+    # objectMetadata: "SIMPLE" # Omitted as per CRD: "If ObjectMetadata is set, source_format should be omitted."
+    fileSetSpecType: "FILE_SYSTEM_MATCH_UPDATED" # Changed value
+  encryptionConfiguration:
+    kmsKeyRef:
+      name: bigquerytable-${uniqueId}-updated # Changed KMS key name
+    kmsKeyVersion: "kmsKeyVersion-updated"
+  requirePartitionFilter: false # Toggled from true
+  maxStaleness: "0-0 0 8:0:0" # Changed duration from 4 hours to 8 hours
+  tableConstraints:
+    primaryKey:
+      columns:
+        - name
+        - post_abbr # Added post_abbr to primary key
+    foreignKeys:
+      - name: fk_name_updated
+        referencedTable:
+          projectId: project-${uniqueId}-ref-updated
+          datasetId: dataset-${uniqueId}-ref-updated
+          tableId: table-${uniqueId}-ref-updated
+        columnReferences:
+          referencingColumn: post_abbr # Changed from name
+          referencedColumn: name_in_referenced_table # Changed from name
