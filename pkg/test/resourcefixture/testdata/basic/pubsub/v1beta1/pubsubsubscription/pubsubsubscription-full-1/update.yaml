@@ -1,0 +1,62 @@
+# Copyright 2025 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: pubsub.cnrm.cloud.google.com/v1beta1
+kind: PubSubSubscription
+metadata:
+  name: pubsubsubscription-${uniqueId}
+spec:
+  topicRef:
+    name: pubsubtopic-${uniqueId}
+  ackDeadlineSeconds: 30 # Changed from 600
+  retainAckedMessages: false # Changed from true
+  messageRetentionDuration: "302400s" # Changed from "604800s" (3.5 days)
+  enableMessageOrdering: true # Immutable
+  # projectRef is not supported by this resource
+  # location is not supported by this resource
+  filter: "attributes.event_type = \"widget_created\"" # Immutable
+  enableExactlyOnceDelivery: false # Changed from true
+  deadLetterPolicy:
+    deadLetterTopicRef:
+      name: pubsubtopic-dlq-${uniqueId} # Changed topic ref
+    maxDeliveryAttempts: 50 # Changed from 100
+  retryPolicy:
+    minimumBackoff: "20s" # Changed from "10s"
+    maximumBackoff: "300s" # Changed from "600s"
+  expirationPolicy:
+    ttl: "86400s" # Changed from "604800s" (1 day)
+  pushConfig:
+    pushEndpoint: "https://example.com/push-updated" # Changed
+    attributes:
+      x-goog-version: "v1beta2" # Changed
+    oidcToken:
+      serviceAccountEmail: "updated-sa@example.com" # Changed
+      audience: "updated-audience" # Changed
+    noWrapper:
+      writeMetadata: false # Changed
+  bigqueryConfig:
+    tableRef:
+      name: bigquerytable-updated-${uniqueId} # Changed
+    dropUnknownFields: false # Changed
+    useTopicSchema: false # Changed
+    writeMetadata: false # Changed
+  cloudStorageConfig:
+    bucketRef:
+      name: storagebucket-updated-${uniqueId} # Changed
+    filenamePrefix: "updated-prefix" # Changed
+    filenameSuffix: "updated-suffix" # Changed
+    maxBytes: 20480 # Changed from 10240
+    maxDuration: "300s" # Changed from "600s"
+    avroConfig:
+      writeMetadata: false # Changed
