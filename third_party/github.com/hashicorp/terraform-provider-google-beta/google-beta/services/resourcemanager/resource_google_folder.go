@@ -46,7 +46,7 @@ func ResourceGoogleFolder() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: `The folder id of the parent Folder. Exactly one of parent_org_id or parent_folder_id must be specified.`,
- 			},
+			},
 			// Must be unique amongst its siblings.
 			"display_name": {
 				Type:        schema.TypeString,

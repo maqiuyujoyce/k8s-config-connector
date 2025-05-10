@@ -399,9 +399,9 @@ func ResourceBigQueryTable() *schema.Resource {
 		),
 		Schema: map[string]*schema.Schema{
 			"unmanaged": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Default: "",
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     "",
 				Description: `Collection of fields to ignore during update`,
 			},
 			// TableId: [Required] The ID of the table. The ID must contain only
