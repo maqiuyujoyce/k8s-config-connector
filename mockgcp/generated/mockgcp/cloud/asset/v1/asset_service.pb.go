@@ -21,6 +21,9 @@
 package assetpb
 
 import (
+	reflect "reflect"
+	sync "sync"
+
 	iampb "cloud.google.com/go/iam/apiv1/iampb"
 	longrunningpb "cloud.google.com/go/longrunning/autogen/longrunningpb"
 	duration "github.com/golang/protobuf/ptypes/duration"
@@ -33,8 +36,6 @@ import (
 	field_mask "google.golang.org/genproto/protobuf/field_mask"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	reflect "reflect"
-	sync "sync"
 )
 
 const (

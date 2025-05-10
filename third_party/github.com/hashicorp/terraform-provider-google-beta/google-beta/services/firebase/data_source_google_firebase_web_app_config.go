@@ -6,7 +6,7 @@ import (
 	"context"
 	"fmt"
 
-	"google.golang.org/api/firebase/v1beta1"
+	firebase "google.golang.org/api/firebase/v1beta1"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
