@@ -21,12 +21,13 @@ package clouddeploy_test
 import (
 	"context"
 	"fmt"
+	"strings"
+	"testing"
+
 	dcl "github.com/GoogleCloudPlatform/declarative-resource-client-library/dcl"
 	clouddeploy "github.com/GoogleCloudPlatform/declarative-resource-client-library/services/google/clouddeploy/beta"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
-	"strings"
-	"testing"
 
 	"github.com/hashicorp/terraform-provider-google-beta/google-beta/acctest"
 	"github.com/hashicorp/terraform-provider-google-beta/google-beta/envvar"

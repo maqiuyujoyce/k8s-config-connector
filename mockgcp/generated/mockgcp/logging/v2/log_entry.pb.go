@@ -21,6 +21,9 @@
 package loggingpb
 
 import (
+	reflect "reflect"
+	sync "sync"
+
 	any1 "github.com/golang/protobuf/ptypes/any"
 	_struct "github.com/golang/protobuf/ptypes/struct"
 	timestamp "github.com/golang/protobuf/ptypes/timestamp"
@@ -29,8 +32,6 @@ import (
 	_type "google.golang.org/genproto/googleapis/logging/type"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	reflect "reflect"
-	sync "sync"
 )
 
 const (

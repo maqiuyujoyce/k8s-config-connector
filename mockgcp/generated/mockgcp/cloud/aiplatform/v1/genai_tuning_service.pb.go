@@ -21,13 +21,14 @@
 package aiplatformpb
 
 import (
+	reflect "reflect"
+	sync "sync"
+
 	longrunningpb "cloud.google.com/go/longrunning/autogen/longrunningpb"
 	empty "github.com/golang/protobuf/ptypes/empty"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	reflect "reflect"
-	sync "sync"
 )
 
 const (
