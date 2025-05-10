@@ -21,13 +21,14 @@
 package monitoringpb
 
 import (
+	reflect "reflect"
+	sync "sync"
+
 	duration "github.com/golang/protobuf/ptypes/duration"
 	timestamp "github.com/golang/protobuf/ptypes/timestamp"
 	distribution "google.golang.org/genproto/googleapis/api/distribution"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	reflect "reflect"
-	sync "sync"
 )
 
 const (

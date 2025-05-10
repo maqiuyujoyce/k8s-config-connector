@@ -24,7 +24,7 @@ import (
 	"strings"
 	"time"
 
-		"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/hashicorp/terraform-provider-google-beta/google-beta/tpgresource"
 	transport_tpg "github.com/hashicorp/terraform-provider-google-beta/google-beta/transport"
@@ -574,7 +574,7 @@ func resourceEdgecontainerClusterCreate(d *schema.ResourceData, meta interface{}
 	}
 
 	obj := make(map[string]interface{})
-    labelsProp, err := expandEdgecontainerClusterLabels(d.Get("labels"), d, config)
+	labelsProp, err := expandEdgecontainerClusterLabels(d.Get("labels"), d, config)
 	if err != nil {
 		return err
 	} else if v, ok := d.GetOkExists("labels"); !tpgresource.IsEmptyValue(reflect.ValueOf(labelsProp)) && (ok || !reflect.DeepEqual(v, labelsProp)) {
@@ -646,7 +646,7 @@ func resourceEdgecontainerClusterCreate(d *schema.ResourceData, meta interface{}
 	} else if v, ok := d.GetOkExists("release_channel"); !tpgresource.IsEmptyValue(reflect.ValueOf(releaseChannelProp)) && (ok || !reflect.DeepEqual(v, releaseChannelProp)) {
 		obj["releaseChannel"] = releaseChannelProp
 	}
-	
+
 	url, err := tpgresource.ReplaceVars(d, config, "{{EdgecontainerBasePath}}projects/{{project}}/locations/{{location}}/clusters?cluster_id={{name}}")
 	if err != nil {
 		return err
@@ -804,7 +804,7 @@ func resourceEdgecontainerClusterRead(d *schema.ResourceData, meta interface{}) 
 	if err := d.Set("release_channel", flattenEdgecontainerClusterReleaseChannel(res["releaseChannel"], d, config)); err != nil {
 		return fmt.Errorf("Error reading Cluster: %s", err)
 	}
-	
+
 	return nil
 }
 
@@ -824,7 +824,7 @@ func resourceEdgecontainerClusterUpdate(d *schema.ResourceData, meta interface{}
 	billingProject = project
 
 	obj := make(map[string]interface{})
-    labelsProp, err := expandEdgecontainerClusterLabels(d.Get("labels"), d, config)
+	labelsProp, err := expandEdgecontainerClusterLabels(d.Get("labels"), d, config)
 	if err != nil {
 		return err
 	} else if v, ok := d.GetOkExists("labels"); !tpgresource.IsEmptyValue(reflect.ValueOf(v)) && (ok || !reflect.DeepEqual(v, labelsProp)) {
@@ -842,7 +842,7 @@ func resourceEdgecontainerClusterUpdate(d *schema.ResourceData, meta interface{}
 	} else if v, ok := d.GetOkExists("networking"); !tpgresource.IsEmptyValue(reflect.ValueOf(v)) && (ok || !reflect.DeepEqual(v, networkingProp)) {
 		obj["networking"] = networkingProp
 	}
-    authorizationProp, err := expandEdgecontainerClusterAuthorization(d.Get("authorization"), d, config)
+	authorizationProp, err := expandEdgecontainerClusterAuthorization(d.Get("authorization"), d, config)
 	if err != nil {
 		return err
 	} else if v, ok := d.GetOkExists("authorization"); !tpgresource.IsEmptyValue(reflect.ValueOf(v)) && (ok || !reflect.DeepEqual(v, authorizationProp)) {
@@ -890,7 +890,7 @@ func resourceEdgecontainerClusterUpdate(d *schema.ResourceData, meta interface{}
 	} else if v, ok := d.GetOkExists("release_channel"); !tpgresource.IsEmptyValue(reflect.ValueOf(v)) && (ok || !reflect.DeepEqual(v, releaseChannelProp)) {
 		obj["releaseChannel"] = releaseChannelProp
 	}
-	
+
 	url, err := tpgresource.ReplaceVars(d, config, "{{EdgecontainerBasePath}}projects/{{project}}/locations/{{location}}/clusters/{{name}}")
 	if err != nil {
 		return err
@@ -1104,7 +1104,7 @@ func flattenEdgecontainerClusterUpdateTime(v interface{}, d *schema.ResourceData
 }
 
 func flattenEdgecontainerClusterLabels(v interface{}, d *schema.ResourceData, config *transport_tpg.Config) interface{} {
-			return v
+	return v
 }
 
 func flattenEdgecontainerClusterFleet(v interface{}, d *schema.ResourceData, config *transport_tpg.Config) interface{} {
@@ -1591,7 +1591,7 @@ func expandEdgecontainerClusterLabels(v interface{}, d tpgresource.TerraformReso
 	}
 	m := make(map[string]string)
 	for k, val := range v.(map[string]interface{}) {
-			m[k] = val.(string)
+		m[k] = val.(string)
 	}
 	return m, nil
 }

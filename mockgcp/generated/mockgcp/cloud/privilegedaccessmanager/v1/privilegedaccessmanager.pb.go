@@ -21,6 +21,9 @@
 package privilegedaccessmanagerpb
 
 import (
+	reflect "reflect"
+	sync "sync"
+
 	longrunningpb "cloud.google.com/go/longrunning/autogen/longrunningpb"
 	duration "github.com/golang/protobuf/ptypes/duration"
 	timestamp "github.com/golang/protobuf/ptypes/timestamp"
@@ -29,8 +32,6 @@ import (
 	field_mask "google.golang.org/genproto/protobuf/field_mask"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	reflect "reflect"
-	sync "sync"
 )
 
 const (

@@ -69,8 +69,8 @@ import (
 	"github.com/hashicorp/terraform-provider-google-beta/google-beta/services/dns"
 	"github.com/hashicorp/terraform-provider-google-beta/google-beta/services/documentai"
 	"github.com/hashicorp/terraform-provider-google-beta/google-beta/services/documentaiwarehouse"
-	"github.com/hashicorp/terraform-provider-google-beta/google-beta/services/edgenetwork"
 	"github.com/hashicorp/terraform-provider-google-beta/google-beta/services/edgecontainer"
+	"github.com/hashicorp/terraform-provider-google-beta/google-beta/services/edgenetwork"
 	"github.com/hashicorp/terraform-provider-google-beta/google-beta/services/essentialcontacts"
 	"github.com/hashicorp/terraform-provider-google-beta/google-beta/services/filestore"
 	"github.com/hashicorp/terraform-provider-google-beta/google-beta/services/firebase"
@@ -2021,7 +2021,7 @@ func ProviderConfigure(ctx context.Context, d *schema.ResourceData, p *schema.Pr
 	if v, ok := d.GetOk("universe_domain"); ok {
 		if config.UniverseDomain == "" {
 			config.UniverseDomain = v.(string)
-		} else if  v.(string) != config.UniverseDomain {
+		} else if v.(string) != config.UniverseDomain {
 			if _, err := os.Stat(config.Credentials); err == nil {
 				return nil, diag.FromErr(fmt.Errorf("'%s' does not match the universe domain '%s' already set in the credential file '%s'. The 'universe_domain' provider configuration can not be used to override the universe domain that is defined in the active credential.  Set the 'universe_domain' provider configuration when universe domain information is not already available in the credential, e.g. when authenticating with a JWT token.", v, config.UniverseDomain, config.Credentials))
 			} else {
