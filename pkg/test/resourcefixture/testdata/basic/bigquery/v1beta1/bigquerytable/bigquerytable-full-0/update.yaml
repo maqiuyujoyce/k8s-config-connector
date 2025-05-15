@@ -1,0 +1,89 @@
+# Copyright 2025 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: bigquery.cnrm.cloud.google.com/v1beta1
+kind: BigQueryTable
+metadata:
+  name: bigquerytable-${uniqueId}
+  labels: # Added for update
+    update-label: "true"
+spec:
+  datasetRef:
+    name: bigquerydataset-${uniqueId} # Kept same, typically not updated
+  description: "This is an updated description for the BigQuery table." # Added for update
+  friendlyName: "Updated Friendly Table Name" # Added for update
+  labels: # spec.labels for KCC direct mode
+    another-update-label: "update-value"
+  clustering: ["newClusteringColumnA", "newClusteringColumnB"] # Added for update
+  encryptionConfiguration: # Modified
+    kmsKeyRef: # Modified
+      name: kmscryptokey-updated-${uniqueId} # Modified
+    kmsKeyVersion: "gcp-kms-key-version-string-updated-${uniqueId}" # Modified
+  expirationTime: 1735689600000 # Added for update (e.g., Jan 1, 2025, 00:00:00 UTC in ms)
+  externalDataConfiguration: # Modified
+    autodetect: true # Modified (was false)
+    sourceUris: # Modified (added one URI)
+      - "gs://my-bucket-${uniqueId}/my-file.csv"
+      - "gs://my-bucket-${uniqueId}/my-updated-file.csv" # Added URI
+    sourceFormat: "CSV" # Using CSV to enable csvOptions and schema (Kept same)
+    schema: '[{"name":"colA_updated","type":"BYTES"},{"name":"colB_updated","type":"FLOAT"},{"name":"colC_new","type":"TIMESTAMP"}]' # Modified
+    avroOptions: # Modified
+      useAvroLogicalTypes: false # Modified (was true)
+    compression: "NONE" # Modified (was GZIP)
+    connectionId: "projects/${projectId}/locations/us-central1/connections/connection-updated-${uniqueId}" # Modified
+    csvOptions: # Modified
+      allowJaggedRows: false # Modified (was true)
+      allowQuotedNewlines: false # Modified (was true)
+      encoding: "ISO-8859-1" # Modified (was UTF-8)
+      fieldDelimiter: ";" # Modified (was ,)
+      quote: '' # Modified (was ")
+      skipLeadingRows: 0 # Modified (was 1)
+    fileSetSpecType: "MANIFEST_FILE" # Modified (was FILE_SYSTEM_MATCH)
+    googleSheetsOptions: # Modified
+      range: "sheet1!A1:Z200" # Modified
+      skipLeadingRows: 0 # Modified (was 1)
+    hivePartitioningOptions: # Modified
+      mode: "STRINGS" # Modified (was AUTO)
+      requirePartitionFilter: true # Modified (was false)
+      sourceUriPrefix: "gs://my-bucket-${uniqueId}/my-hive-table-updated/" # Modified
+    ignoreUnknownValues: false # Modified (was true)
+    jsonOptions: # Included per instruction, though sourceFormat is CSV
+      encoding: "ISO-8859-1" # Modified (was UTF-8)
+    maxBadRecords: 10 # Modified (was 5)
+    metadataCacheMode: "MANUAL" # Modified (was AUTOMATIC)
+    parquetOptions: # Included per instruction, though sourceFormat is CSV
+      enableListInference: false # Modified (was true)
+      enumAsString: false # Modified (was true)
+    referenceFileSchemaUri: "gs://my-bucket-${uniqueId}/schema_files/my_schema_updated.json" # Modified
+  maxStaleness: "INTERVAL 2 HOUR" # Modified
+  rangePartitioning: # Modified
+    field: "myRangePartitionColumnUpdated" # Modified field name
+    range:
+      start: 0 # Immutable, kept same
+      end: 2000 # Modified
+      interval: 50 # Modified
+  requirePartitionFilter: true # Added top-level field for update
+  # Example of adding tableConstraints during an update
+  tableConstraints:
+    primaryKey:
+      columns: ["colA_updated"]
+    foreignKeys:
+      - name: "fk_example"
+        columnReferences:
+          referencingColumn: "colB_updated"
+          referencedColumn: "parentColumnInOtherTable"
+        referencedTable:
+          projectId: "${projectId}"
+          datasetId: "otherDatasetId"
+          tableId: "otherReferencedTableId"

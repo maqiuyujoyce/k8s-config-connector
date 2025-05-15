@@ -1,0 +1,106 @@
+# Copyright 2025 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: bigquery.cnrm.cloud.google.com/v1beta1
+kind: BigQueryTable
+metadata:
+  name: bigquerytable-${uniqueId}
+spec:
+  datasetRef:
+    name: bigquerydataset-${uniqueId}
+  description: An updated user-friendly description of this table.
+  expirationTime: 36000000
+  externalDataConfiguration:
+    autodetect: false
+    avroOptions:
+      useAvroLogicalTypes: false
+    compression: NONE
+    # connectionId cannot be updated
+    # connectionId: "connection-${uniqueId}"
+    csvOptions:
+      allowJaggedRows: false
+      allowQuotedNewlines: false
+      encoding: ISO-8859-1
+      fieldDelimiter: "|"
+      quote: "'"
+      skipLeadingRows: 1
+    # fileSetSpecType cannot be updated
+    # fileSetSpecType: FILE_SET_SPEC_TYPE_FILE_SYSTEM_MATCH
+    googleSheetsOptions:
+      range: "sheet1!A1:C30"
+      skipLeadingRows: 1
+    hivePartitioningOptions:
+      mode: STRINGS
+      requirePartitionFilter: true
+      sourceUriPrefix: "gs://bucket/updated_path_to_table/"
+    ignoreUnknownValues: false
+    jsonOptions:
+      encoding: ISO-8859-1
+    maxBadRecords: 1
+    # metadataCacheMode cannot be updated
+    # metadataCacheMode: AUTOMATIC
+    # objectMetadata cannot be updated
+    # objectMetadata: SIMPLE
+    parquetOptions:
+      enableListInference: false
+      enumAsString: false
+    referenceFileSchemaUri: "gs://bucket/updated_schema.json"
+    schema: '[{"name":"field1","type":"STRING"},{"name":"field2","type":"INTEGER"}]'
+    sourceFormat: JSON
+    sourceUris:
+      - "gs://bucket/updated_file.json"
+  friendlyName: bigquerytable-${uniqueId}-updated
+  labels:
+    label_key_1: "updated_label_value_1"
+    label_key_2: "label_value_2"
+  materializedView:
+    allowNonIncrementalDefinition: false
+    enableRefresh: false
+    # query cannot be updated
+    # query: "SELECT * FROM bigquerydataset-${uniqueId}.bigquerytable-${uniqueId}"
+    refreshIntervalMs: 3600000
+  maxStaleness: "0-0 0 1:0:0.0"
+  # rangePartitioning cannot be updated
+  # rangePartitioning:
+  #   field: "field1"
+  #   range:
+  #     end: 100
+  #     interval: 10
+  #     start: 0
+  requirePartitionFilter: true
+  schema: '[{"name":"field1","type":"STRING"},{"name":"field2","type":"INTEGER"}]'
+  tableConstraints:
+    foreignKeys:
+      - columnReferences:
+          referencedColumn: "updated_referenced_column"
+          referencingColumn: "updated_referencing_column"
+        name: "updated_fk_name"
+        referencedTable:
+          datasetId: "updated_dataset_id"
+          projectId: "updated_project_id"
+          tableId: "updated_table_id"
+    primaryKey:
+      columns:
+        - "field1"
+        - "field2"
+  timePartitioning:
+    expirationMs: 36000000
+    # field cannot be updated
+    # field: "field1"
+    requirePartitionFilter: true # This is deprecated, but lets test it anyway
+    type: HOUR
+  view:
+    # query cannot be updated
+    # query: "SELECT * FROM bigquerydataset-${uniqueId}.bigquerytable-${uniqueId}"
+    useLegacySql: true
