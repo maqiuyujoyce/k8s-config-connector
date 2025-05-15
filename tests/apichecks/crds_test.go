@@ -526,6 +526,14 @@ func TestCRDFieldPresenceInUnstructured(t *testing.T) {
 					}
 				}
 
+				// Exclude output-only spec fields.
+				switch crd.Name {
+				case "pubsubsubscriptions.pubsub.cnrm.cloud.google.com":
+					if fieldPath == ".spec.cloudStorageConfig.state" {
+						missing = false
+					}
+				}
+
 				if missing {
 					errs = append(errs, fmt.Sprintf("[missing_field] crd=%s version=%v: field %q is not set in unstructured objects", crd.Name, version.Name, fieldPath))
 				}
