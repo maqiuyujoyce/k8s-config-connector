@@ -13,11 +13,57 @@
 # limitations under the License.
 
 apiVersion: pubsub.cnrm.cloud.google.com/v1beta1
+kind: PubSubSchema
+metadata:
+  name: pubsubschema-${uniqueId}
+spec:
+  type: PROTOCOL_BUFFER
+  definition: "syntax = \"proto3\";\nmessage ProtoBuf {\nstring content = 1;\nint64 publish_time = 2;\n}"
+#  definition: "syntax = \"proto3\";\nmessage ProtoBuf {\nstring content = 1;\nstring message_id = 2;\nint64 publish_time = 3;\nstring attributes = 4;\nstring subscription_name = 5;\n}"
+#  type: AVRO
+#  definition: >
+#    {
+#      "type" : "record",
+#      "name" : "Avro",
+#      "fields" : [
+#        {
+#          "name" : "content",
+#          "type" : "string"
+#        }
+#      ]
+#    }
+
+  #        {
+  #          "name" : "message_id",
+  #          "type" : "string"
+  #        },
+  #        {
+  #          "name" : "publish_time",
+  #          "type" : "int"
+  #        },
+  #        {
+  #          "name" : "attributes",
+  #          "type" : "string"
+  #        },
+  #        {
+  #          "name" : "subscription_name",
+  #          "type" : "string"
+  #        }
+  projectRef:
+    external: ${projectId}
+---
+apiVersion: pubsub.cnrm.cloud.google.com/v1beta1
 kind: PubSubTopic
 metadata:
   annotations:
     cnrm.cloud.google.com/project-id: ${projectId}
   name: pubsubtopic-${uniqueId}
+spec:
+  schemaSettings:
+    schemaRef:
+#      name: pubsubschema-${uniqueId}
+       external: projects/maqiuyu-kcc-test-2/schemas/pubsubschema-25vjh6jx5nyohva
+    encoding: JSON
 ---
 apiVersion: iam.cnrm.cloud.google.com/v1beta1
 kind: IAMPolicyMember
@@ -74,15 +120,8 @@ spec:
   friendlyName: bigquerytable-1-${uniqueId}
   datasetRef:
     name: bigquerydataset-${uniqueId}
-  schema: >
-    [
-      {
-        "name": "data",
-        "type": "STRING",
-        "mode": "NULLABLE",
-        "description": "The data"
-      }
-    ]
+  schema: '[{"name":"data","type":"STRING","mode":"NULLABLE","description":"The data"},{"name":"content","type":"STRING","mode":"NULLABLE"},{"name":"message_id","type":"STRING","mode":"REQUIRED"},{"name":"publish_time","type":"TIMESTAMP","mode":"REQUIRED"},{"name":"attributes","type":"STRING","mode":"REQUIRED"},{"name":"subscription_name","type":"STRING","mode":"REQUIRED"}]'
+#  schema: '[{"name":"data","type":"STRING","mode":"NULLABLE","description":"The data"},{"name":"content","type":"STRING","mode":"NULLABLE"},{"name":"message_id","type":"STRING","mode":"REQUIRED"},{"name":"attributes","type":"STRING","mode":"REQUIRED"},{"name":"subscription_name","type":"STRING","mode":"REQUIRED"}]'
 ---
 apiVersion: bigquery.cnrm.cloud.google.com/v1beta1
 kind: BigQueryTable
@@ -95,12 +134,32 @@ spec:
   friendlyName: bigquerytable-2-${uniqueId}
   datasetRef:
     name: bigquerydataset-${uniqueId}
-  schema: >
+  schema: >-
     [
       {
         "name": "data",
         "type": "STRING",
         "mode": "NULLABLE",
         "description": "The data"
+      },
+      {
+        "name": "message_id",
+        "type": "STRING",
+        "mode": "REQUIRED"
+      },
+      {
+        "name": "publish_time",
+        "type": "STRING",
+        "mode": "REQUIRED"
+      },
+      {
+        "name": "attributes",
+        "type": "STRING",
+        "mode": "REQUIRED"
+      },
+      {
+        "name": "subscription_name",
+        "type": "STRING",
+        "mode": "REQUIRED"
       }
     ]

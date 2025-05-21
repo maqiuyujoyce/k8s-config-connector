@@ -56,4 +56,3 @@ spec:
     maxDuration: "600s"
     avroConfig:
       writeMetadata: true
-  enableExactlyOnceDelivery: true
