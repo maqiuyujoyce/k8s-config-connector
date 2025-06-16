@@ -1,0 +1,27 @@
+# Copyright 2025 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: secretmanager.cnrm.cloud.google.com/v1alpha1
+kind: SecretManagerSecretVersion
+metadata:
+  name: secretmanagersecretversion-minimal-${uniqueId}
+spec:
+  secretRef:
+    external: projects/${projectId}/secrets/secretmanagersecret-${uniqueId}
+  secretData:
+    value: "c2VjcmV0LWRhdGE=" # "secret-data" base64 encoded
+  # The CRD indicates secretRef is required.
+  # The CRD also indicates secretData is required.
+  # No 'location' field at the spec level. Location is part of secretRef.external if that secret is regional.
+  # No 'projectRef' field at the spec level for SecretManagerSecretVersion. Project is part of secretRef.external.
