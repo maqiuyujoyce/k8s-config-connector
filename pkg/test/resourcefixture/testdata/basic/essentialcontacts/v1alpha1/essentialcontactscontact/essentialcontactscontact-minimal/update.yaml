@@ -19,7 +19,8 @@ metadata:
 spec:
   projectRef:
     external: ${projectId}
-  languageTag: en
+  languageTag: fr
   notificationCategorySubscriptions:
-    - ALL
-  email: "all-alerts@test.com"
+    - BILLING
+    - PRODUCT_UPDATES
+  email: "bill-alerts@test.com"
