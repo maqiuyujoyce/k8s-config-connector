@@ -333,7 +333,6 @@
 [missing_field] crd=cloudschedulerjobs.cloudscheduler.cnrm.cloud.google.com version=v1beta1: field ".spec.httpTarget.oauthToken.serviceAccountRef" is not set; neither 'external' nor 'name' are set
 [missing_field] crd=cloudschedulerjobs.cloudscheduler.cnrm.cloud.google.com version=v1beta1: field ".spec.httpTarget.oidcToken.audience" is not set in unstructured objects
 [missing_field] crd=cloudschedulerjobs.cloudscheduler.cnrm.cloud.google.com version=v1beta1: field ".spec.httpTarget.oidcToken.serviceAccountRef" is not set; neither 'external' nor 'name' are set
-[missing_field] crd=cloudschedulerjobs.cloudscheduler.cnrm.cloud.google.com version=v1beta1: field ".spec.httpTarget.uri" is not set in unstructured objects
 [missing_field] crd=cloudschedulerjobs.cloudscheduler.cnrm.cloud.google.com version=v1beta1: field ".spec.retryConfig.maxBackoffDuration" is not set in unstructured objects
 [missing_field] crd=cloudschedulerjobs.cloudscheduler.cnrm.cloud.google.com version=v1beta1: field ".spec.retryConfig.maxDoublings" is not set in unstructured objects
 [missing_field] crd=cloudschedulerjobs.cloudscheduler.cnrm.cloud.google.com version=v1beta1: field ".spec.retryConfig.maxRetryDuration" is not set in unstructured objects
