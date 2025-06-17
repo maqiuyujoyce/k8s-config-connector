@@ -871,7 +871,6 @@
 [missing_field] crd=computeserviceattachments.compute.cnrm.cloud.google.com version=v1beta1: field ".spec.consumerRejectLists[].namespace" is not set in unstructured objects
 [missing_field] crd=computeserviceattachments.compute.cnrm.cloud.google.com version=v1beta1: field ".spec.natSubnets[].external" is not set in unstructured objects
 [missing_field] crd=computeserviceattachments.compute.cnrm.cloud.google.com version=v1beta1: field ".spec.natSubnets[].namespace" is not set in unstructured objects
-[missing_field] crd=computesharedvpcserviceprojects.compute.cnrm.cloud.google.com version=v1beta1: field ".spec.deletionPolicy" is not set in unstructured objects
 [missing_field] crd=computesnapshots.compute.cnrm.cloud.google.com version=v1beta1: field ".spec.chainName" is not set in unstructured objects
 [missing_field] crd=computesnapshots.compute.cnrm.cloud.google.com version=v1beta1: field ".spec.snapshotEncryptionKey.kmsKeyRef" is not set; neither 'external' nor 'name' are set
 [missing_field] crd=computesnapshots.compute.cnrm.cloud.google.com version=v1beta1: field ".spec.snapshotEncryptionKey.kmsKeyServiceAccountRef" is not set; neither 'external' nor 'name' are set
