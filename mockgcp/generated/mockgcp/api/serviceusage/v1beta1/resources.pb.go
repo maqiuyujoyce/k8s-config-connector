@@ -21,13 +21,14 @@
 package serviceusage
 
 import (
+	reflect "reflect"
+	sync "sync"
+
 	monitoredres "google.golang.org/genproto/googleapis/api/monitoredres"
 	serviceconfig "google.golang.org/genproto/googleapis/api/serviceconfig"
 	api "google.golang.org/genproto/protobuf/api"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	reflect "reflect"
-	sync "sync"
 )
 
 const (
