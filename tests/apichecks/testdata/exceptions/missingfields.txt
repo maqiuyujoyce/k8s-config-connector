@@ -291,7 +291,6 @@
 [missing_field] crd=cloudbuildtriggers.cloudbuild.cnrm.cloud.google.com version=v1beta1: field ".spec.github.push.invertRegex" is not set in unstructured objects
 [missing_field] crd=cloudbuildtriggers.cloudbuild.cnrm.cloud.google.com version=v1beta1: field ".spec.github.push.tag" is not set in unstructured objects
 [missing_field] crd=cloudbuildtriggers.cloudbuild.cnrm.cloud.google.com version=v1beta1: field ".spec.includeBuildLogs" is not set in unstructured objects
-[missing_field] crd=cloudbuildtriggers.cloudbuild.cnrm.cloud.google.com version=v1beta1: field ".spec.location" is not set in unstructured objects
 [missing_field] crd=cloudbuildtriggers.cloudbuild.cnrm.cloud.google.com version=v1beta1: field ".spec.pubsubConfig.serviceAccountRef" is not set; neither 'external' nor 'name' are set
 [missing_field] crd=cloudbuildtriggers.cloudbuild.cnrm.cloud.google.com version=v1beta1: field ".spec.pubsubConfig.state" is not set in unstructured objects
 [missing_field] crd=cloudbuildtriggers.cloudbuild.cnrm.cloud.google.com version=v1beta1: field ".spec.pubsubConfig.subscription" is not set in unstructured objects
