@@ -142,8 +142,8 @@ can have regional availability (nodes are present in 2 or more zones in a region
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"authorized_external_networks": {
-							Type:     schema.TypeList,
-							Optional: true,
+							Type:        schema.TypeList,
+							Optional:    true,
 							Description: `A list of external networks authorized to access this instance. This field is only allowed to be set when 'enable_public_ip' is set to true.`,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
@@ -162,8 +162,8 @@ can have regional availability (nodes are present in 2 or more zones in a region
 							Description: `Enabling outbound public ip for the instance.`,
 						},
 						"enable_public_ip": {
-							Type:     schema.TypeBool,
-							Optional: true,
+							Type:        schema.TypeBool,
+							Optional:    true,
 							Description: `Enabling public ip for the instance. If a user wishes to disable this, please also clear the list of the authorized external networks set on the same instance.`,
 						},
 					},
@@ -210,8 +210,8 @@ for outbound connections.`,
 				},
 			},
 			"public_ip_address": {
-				Type:     schema.TypeString,
-				Computed: true,
+				Type:        schema.TypeString,
+				Computed:    true,
 				Description: `The public IP addresses for the Instance. This is available ONLY when networkConfig.enablePublicIp is set to true. This is the connection endpoint for an end-user application.`,
 			},
 			"reconciling": {
@@ -555,7 +555,7 @@ func resourceAlloydbInstanceUpdate(d *schema.ResourceData, meta interface{}) err
 	if d.HasChange("machine_config") {
 		updateMask = append(updateMask, "machineConfig")
 	}
-	
+
 	if d.HasChange("network_config") {
 		updateMask = append(updateMask, "networkConfig")
 	}
