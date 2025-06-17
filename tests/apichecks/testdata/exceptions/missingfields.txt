@@ -409,7 +409,6 @@
 [missing_field] crd=computebackendservices.compute.cnrm.cloud.google.com version=v1beta1: field ".spec.consistentHash.minimumRingSize" is not set in unstructured objects
 [missing_field] crd=computebackendservices.compute.cnrm.cloud.google.com version=v1beta1: field ".spec.customRequestHeaders[]" is not set in unstructured objects
 [missing_field] crd=computebackendservices.compute.cnrm.cloud.google.com version=v1beta1: field ".spec.customResponseHeaders[]" is not set in unstructured objects
-[missing_field] crd=computebackendservices.compute.cnrm.cloud.google.com version=v1beta1: field ".spec.description" is not set in unstructured objects
 [missing_field] crd=computebackendservices.compute.cnrm.cloud.google.com version=v1beta1: field ".spec.edgeSecurityPolicyRef" is not set; neither 'external' nor 'name' are set
 [missing_field] crd=computebackendservices.compute.cnrm.cloud.google.com version=v1beta1: field ".spec.enableCdn" is not set in unstructured objects
 [missing_field] crd=computebackendservices.compute.cnrm.cloud.google.com version=v1beta1: field ".spec.failoverPolicy.disableConnectionDrainOnFailover" is not set in unstructured objects
