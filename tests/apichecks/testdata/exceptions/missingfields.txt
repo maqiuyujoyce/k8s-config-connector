@@ -3253,7 +3253,6 @@
 [missing_field] crd=runservices.run.cnrm.cloud.google.com version=v1beta1: field ".spec.traffic[].tag" is not set in unstructured objects
 [missing_field] crd=secretmanagersecretversions.secretmanager.cnrm.cloud.google.com version=v1beta1: field ".spec.deletionPolicy" is not set in unstructured objects
 [missing_field] crd=secretmanagersecretversions.secretmanager.cnrm.cloud.google.com version=v1beta1: field ".spec.isSecretDataBase64" is not set in unstructured objects
-[missing_field] crd=secretmanagersecretversions.secretmanager.cnrm.cloud.google.com version=v1beta1: field ".spec.secretData.value" is not set in unstructured objects
 [missing_field] crd=servicenetworkingconnections.servicenetworking.cnrm.cloud.google.com version=v1beta1: field ".spec.reservedPeeringRanges[].external" is not set in unstructured objects
 [missing_field] crd=servicenetworkingconnections.servicenetworking.cnrm.cloud.google.com version=v1beta1: field ".spec.reservedPeeringRanges[].namespace" is not set in unstructured objects
 [missing_field] crd=spannerdatabases.spanner.cnrm.cloud.google.com version=v1beta1: field ".spec.databaseDialect" is not set in unstructured objects
