@@ -20,9 +20,10 @@ package transport
 
 import (
 	"fmt"
-	dcl "github.com/GoogleCloudPlatform/declarative-resource-client-library/dcl"
 	"log"
 	"time"
+
+	dcl "github.com/GoogleCloudPlatform/declarative-resource-client-library/dcl"
 
 	apikeys "github.com/GoogleCloudPlatform/declarative-resource-client-library/services/google/apikeys/beta"
 	assuredworkloads "github.com/GoogleCloudPlatform/declarative-resource-client-library/services/google/assuredworkloads/beta"
