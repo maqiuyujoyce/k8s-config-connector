@@ -21,6 +21,9 @@
 package dataflowpb
 
 import (
+	reflect "reflect"
+	sync "sync"
+
 	duration "github.com/golang/protobuf/ptypes/duration"
 	_struct "github.com/golang/protobuf/ptypes/struct"
 	timestamp "github.com/golang/protobuf/ptypes/timestamp"
@@ -28,8 +31,6 @@ import (
 	field_mask "google.golang.org/genproto/protobuf/field_mask"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	reflect "reflect"
-	sync "sync"
 )
 
 const (
