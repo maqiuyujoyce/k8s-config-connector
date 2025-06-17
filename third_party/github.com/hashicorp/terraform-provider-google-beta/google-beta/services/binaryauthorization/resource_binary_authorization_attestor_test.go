@@ -4,10 +4,11 @@ package binaryauthorization_test
 
 import (
 	"fmt"
+	"testing"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-provider-google-beta/google-beta/acctest"
 	"github.com/hashicorp/terraform-provider-google-beta/google-beta/services/binaryauthorization"
-	"testing"
 )
 
 func TestSignatureAlgorithmDiffSuppress(t *testing.T) {
