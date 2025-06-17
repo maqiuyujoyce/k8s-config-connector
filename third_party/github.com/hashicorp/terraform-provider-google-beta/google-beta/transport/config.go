@@ -42,7 +42,7 @@ import (
 	"google.golang.org/api/cloudkms/v1"
 	"google.golang.org/api/cloudresourcemanager/v1"
 	resourceManagerV3 "google.golang.org/api/cloudresourcemanager/v3"
-	"google.golang.org/api/composer/v1beta1"
+	composer "google.golang.org/api/composer/v1beta1"
 	compute "google.golang.org/api/compute/v0.beta"
 	container "google.golang.org/api/container/v1beta1"
 	dataflow "google.golang.org/api/dataflow/v1b3"
@@ -2066,7 +2066,7 @@ func (c *Config) GetCredentials(clientScopes []string, initialCredentialsOnly bo
 			return *creds, nil
 		}
 
-                if c.UniverseDomain != "" && c.UniverseDomain != "googleapis.com" {
+		if c.UniverseDomain != "" && c.UniverseDomain != "googleapis.com" {
 			creds, err := transport.Creds(c.Context, option.WithCredentialsJSON([]byte(contents)), option.WithScopes(clientScopes...), internaloption.EnableJwtWithScope())
 			if err != nil {
 				return googleoauth.Credentials{}, fmt.Errorf("unable to parse credentials from '%s': %s", contents, err)
