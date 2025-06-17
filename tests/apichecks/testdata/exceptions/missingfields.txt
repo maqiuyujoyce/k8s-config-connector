@@ -483,13 +483,11 @@
 [missing_field] crd=computefirewallpolicyrules.compute.cnrm.cloud.google.com version=v1beta1: field ".spec.targetServiceAccounts[].namespace" is not set in unstructured objects
 [missing_field] crd=computefirewalls.compute.cnrm.cloud.google.com version=v1beta1: field ".spec.deny[].ports[]" is not set in unstructured objects
 [missing_field] crd=computefirewalls.compute.cnrm.cloud.google.com version=v1beta1: field ".spec.deny[].protocol" is not set in unstructured objects
-[missing_field] crd=computefirewalls.compute.cnrm.cloud.google.com version=v1beta1: field ".spec.description" is not set in unstructured objects
 [missing_field] crd=computefirewalls.compute.cnrm.cloud.google.com version=v1beta1: field ".spec.destinationRanges[]" is not set in unstructured objects
 [missing_field] crd=computefirewalls.compute.cnrm.cloud.google.com version=v1beta1: field ".spec.direction" is not set in unstructured objects
 [missing_field] crd=computefirewalls.compute.cnrm.cloud.google.com version=v1beta1: field ".spec.enableLogging" is not set in unstructured objects
 [missing_field] crd=computefirewalls.compute.cnrm.cloud.google.com version=v1beta1: field ".spec.logConfig.metadata" is not set in unstructured objects
 [missing_field] crd=computefirewalls.compute.cnrm.cloud.google.com version=v1beta1: field ".spec.priority" is not set in unstructured objects
-[missing_field] crd=computefirewalls.compute.cnrm.cloud.google.com version=v1beta1: field ".spec.sourceRanges[]" is not set in unstructured objects
 [missing_field] crd=computefirewalls.compute.cnrm.cloud.google.com version=v1beta1: field ".spec.sourceServiceAccounts[].external" is not set in unstructured objects
 [missing_field] crd=computefirewalls.compute.cnrm.cloud.google.com version=v1beta1: field ".spec.sourceServiceAccounts[].name" is not set in unstructured objects
 [missing_field] crd=computefirewalls.compute.cnrm.cloud.google.com version=v1beta1: field ".spec.sourceServiceAccounts[].namespace" is not set in unstructured objects
