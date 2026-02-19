@@ -100,6 +100,9 @@ There is a trade-off between immediate feedback and system reliability when deci
 *   **Pros:**
     *   **Immediate Feedback:** If the verification fails (mismatch or not found), the `kubectl apply` command fails immediately with a clear error message. This prevents invalid config from even entering the cluster.
 *   **Cons:**
+    *   **Security Isolation Violation:** In Namespaced Mode, each namespace's controller runs with a distinct Google Service Account (GSA) identity (via Workload Identity). The Webhook, however, typically runs as a single deployment with its own distinct identity.
+        For the Webhook to fetch the live state of a resource in Namespace A, it must authenticate to GCP as the GSA associated with Namespace A. Unless the Webhook's GSA is granted broad "Service Account Token Creator" permissions on *all* user GSAs (effectively making it a super-admin), it cannot impersonate the correct identity to perform the verification.
+        Granting such broad privileges to the Webhook violates the security isolation principles of Namespaced Mode. Therefore, implementing `GET` verification in the webhook is generally **infeasible** for standard multi-tenant KCC installations.
     *   **"Hacky" / Anti-Pattern:** Making external network calls (to GCP) from a synchronous admission webhook is generally discouraged.
     *   **Reliability:** A failure in the GCP API (500s or downtime) blocks the `kubectl apply` operation entirely for annotated resources. The user cannot persist their configuration to the cluster, halting deployment pipelines.
     *   **Latency:** Webhooks are synchronous. Even a simple GET call to GCP typically adds 100-500ms of latency per request. This accumulates with other webhooks in the chain and can significantly degrade the interactive `kubectl apply` experience, especially during cold starts, network contention, or API throttling.
