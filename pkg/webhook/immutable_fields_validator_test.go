@@ -2837,7 +2837,7 @@ func TestForceAcquireSkipsImmutableFieldValidationForTFResource(t *testing.T) {
 			}
 			// Pass nil for mgr, dclSchemaLoader as they are not directly used by this specific TF-based validation path within the test.
 			// Pass testservicemetadataloader.NewForUnitTest() for serviceMetadataLoader.
-			handler := NewImmutableFieldsValidatorHandler(smLoader, nil, testservicemetadataloader.NewForUnitTest())(nil) 
+			handler := NewImmutableFieldsValidatorHandler(smLoader, nil, testservicemetadataloader.NewForUnitTest())(nil)
 
 			actual := handler.Handle(context.Background(), req)
 			if !testutil.Equals(t, actual, tc.response) {
