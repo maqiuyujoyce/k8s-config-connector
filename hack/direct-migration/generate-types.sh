@@ -5,10 +5,30 @@ FILTER="package google\..*\.${resource_group}\.(v[0-9]+)"
 PACKAGE=`for file in ${PROTO_FILES}; do egrep "package google\..*\.${resource_group,,}\.(v[0-9]+)" $file ; done | cut -d';' -f1 | uniq | awk '{ print length($0), $0; }' | sort -t' ' -k1nr -k3d | tail -1 | cut -d' ' -f3`
 echo "Using package $PACKAGE for resource group ${resource_group}"
 
-if [ -f "apis/${resource_group,,}/v1beta1/generate.sh" ]; then
-	echo "As part of moving resources from terraform controllers to direct controllers (Epic #5954), we need to create the Go types for \`${resource_group}${resource_name}\`.
+CRD_FILE=$(ls config/crds/resources/apiextensions.k8s.io_v1_customresourcedefinition_${resource_group,,}${resource_name,,}*.${resource_group,,}.cnrm.cloud.google.com.yaml 2>/dev/null | head -n 1)
+CONTROLLER_TYPE="Terraform"
+LABEL_NAME="tf2crd"
+IS_MIGRATED=false
 
-Currently, \`${resource_group}${resource_name}\` is managed by the Terraform controller (marked with \`tf2crd=true\`). The goal is to create the Go types in \`apis/${resource_group,,}/v1beta1/\` so that we can eventually migrate the controller implementation to the \"direct\" approach.
+if [ -n "$CRD_FILE" ]; then
+    if grep -q "dcl2crd: \"true\"" "$CRD_FILE" || grep -q "dcl2crd: true" "$CRD_FILE"; then
+        CONTROLLER_TYPE="DCL"
+        LABEL_NAME="dcl2crd"
+    elif ! grep -q "tf2crd: \"true\"" "$CRD_FILE" && ! grep -q "tf2crd: true" "$CRD_FILE"; then
+        IS_MIGRATED=true
+    fi
+fi
+
+if [ "$IS_MIGRATED" = true ]; then
+    echo "WARNING: The CRD for ${resource_group}${resource_name} ($CRD_FILE) does not have tf2crd or dcl2crd labels."
+    echo "It is likely already migrated to the direct approach."
+    exit 0
+fi
+
+if [ -f "apis/${resource_group,,}/v1beta1/generate.sh" ]; then
+	echo "As part of moving resources from ${CONTROLLER_TYPE} controllers to direct controllers (Epic #5954), we need to create the Go types for \`${resource_group}${resource_name}\`.
+
+Currently, \`${resource_group}${resource_name}\` is managed by the ${CONTROLLER_TYPE} controller (marked with \`${LABEL_NAME}=true\`). The goal is to create the Go types in \`apis/${resource_group,,}/v1beta1/\` so that we can eventually migrate the controller implementation to the \"direct\" approach.
 
 ### Instructions
 
@@ -49,7 +69,7 @@ Currently, \`${resource_group}${resource_name}\` is managed by the Terraform con
     // +kubebuilder:metadata:labels=\"cnrm.cloud.google.com/managed-by-kcc=true\"
     // +kubebuilder:metadata:labels=\"cnrm.cloud.google.com/system=true\"
     // +kubebuilder:metadata:labels=\"cnrm.cloud.google.com/stability-level=stable\"
-    // +kubebuilder:metadata:labels=\"cnrm.cloud.google.com/tf2crd=true\"
+    // +kubebuilder:metadata:labels=\"cnrm.cloud.google.com/${LABEL_NAME}=true\"
     \`\`\`
     The goal is to maintain these annotations, not add an annotation if it is missing.
 
@@ -62,9 +82,9 @@ Currently, \`${resource_group}${resource_name}\` is managed by the Terraform con
 
 This issue is part of Epic #5954."
 else
-	echo "As part of moving resources from terraform controllers to direct controllers (Epic #5954), we need to create the Go types for \`${resource_group}${resource_name}\`.
+	echo "As part of moving resources from ${CONTROLLER_TYPE} controllers to direct controllers (Epic #5954), we need to create the Go types for \`${resource_group}${resource_name}\`.
 
-Currently, \`${resource_group}${resource_name}\` is managed by the Terraform controller (marked with \`tf2crd=true\`). The goal is to create the Go types in \`apis/${resource_group,,}/v1beta1/\` so that we can eventually migrate the controller implementation to the \"direct\" approach.
+Currently, \`${resource_group}${resource_name}\` is managed by the ${CONTROLLER_TYPE} controller (marked with \`${LABEL_NAME}=true\`). The goal is to create the Go types in \`apis/${resource_group,,}/v1beta1/\` so that we can eventually migrate the controller implementation to the \"direct\" approach.
 
 ### Instructions
 
@@ -112,7 +132,7 @@ Currently, \`${resource_group}${resource_name}\` is managed by the Terraform con
     // +kubebuilder:metadata:labels=\"cnrm.cloud.google.com/managed-by-kcc=true\"
     // +kubebuilder:metadata:labels=\"cnrm.cloud.google.com/system=true\"
     // +kubebuilder:metadata:labels=\"cnrm.cloud.google.com/stability-level=stable\"
-    // +kubebuilder:metadata:labels=\"cnrm.cloud.google.com/tf2crd=true\"
+    // +kubebuilder:metadata:labels=\"cnrm.cloud.google.com/${LABEL_NAME}=true\"
     \`\`\`
     The goal is to maintain these annotations, not add an annotation if it is missing.
 
