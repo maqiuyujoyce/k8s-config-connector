@@ -20,6 +20,7 @@ set -o pipefail
 # Inputs from environment variables
 # resource_group (e.g., Storage, Compute, IAM)
 # resource_name (e.g., AnywhereCache, Network, ServiceAccountKey)
+# asset_id (Optional. e.g., metastore.googleapis.com/Service)
 
 if [[ -z "${resource_group:-}" || -z "${resource_name:-}" ]]; then
     echo "Error: environment variables 'resource_group' and 'resource_name' must be set."
@@ -29,13 +30,32 @@ fi
 
 resource_group_lower=$(echo "${resource_group}" | tr '[:upper:]' '[:lower:]')
 resource_name_lower=$(echo "${resource_name}" | tr '[:upper:]' '[:lower:]')
+asset_id="${asset_id:-${resource_group_lower}.googleapis.com/${resource_name}}"
+
+# Check if the resource is already supported in KCC by looking for its CRD
+SUPPORTED=false
+if ls config/crds/resources/ | grep -iq "${resource_name_lower}.*${resource_group_lower}"; then
+    SUPPORTED=true
+fi
 
 if [ -f "./asset-names" ]; then
-	echo "Skipping pulling latest asset-names" >&2
+	: # Skip pulling latest asset-names
 else
 	wget -q https://docs.cloud.google.com/asset-inventory/docs/asset-names
 fi
-ASSET_KEYS=$(egrep "ltr.*googleapis.com" asset-names | sed -e 's/<[^>]*>//g' | sed -e 's/\/\([A-Z_]\{1,\}\)/\/{\1}/g' | egrep -i "${resource_group_lower}" | egrep -i "${resource_name_lower}" || true)
+ASSET_KEYS=$(awk -v id="\"${asset_id}\"" '
+  $0 ~ "id=" id { found=1 }
+  found && /<code translate="no" dir="ltr">\/\// {
+    match($0, /<code[^>]*>(.*)<\/code>/, arr);
+    if (arr[1] != "") print arr[1]; else print $0;
+    found=0
+  }
+' asset-names | sed -e 's/<[^>]*>//g' | sed -e 's/\/\([A-Z_]\{1,\}\)/\/{\1}/g' || true)
+
+if [[ -z "${ASSET_KEYS}" ]]; then
+    # Fallback if exact ID match fails
+    ASSET_KEYS="Could not automatically find the GCP Asset Inventory URL format. You may need to provide the 'asset_id' environment variable (e.g., asset_id=\"metastore.googleapis.com/Service\") or look it up manually at https://docs.cloud.google.com/asset-inventory/docs/asset-names."
+fi
 
 cat <<EOF
 As part of moving resources from terraform and DCL controllers to direct controllers (Epic #5954), we need to create the Go reference for \`${resource_group}${resource_name}\`.
@@ -76,6 +96,9 @@ ${ASSET_KEYS}
     	External string \`json:"external,omitempty"\`
 
     	// The name of a ${resource_group}${resource_name} resource.
+$(if [ "$SUPPORTED" = false ]; then
+    echo "    	// [WARNING] ${resource_group}${resource_name} not yet supported in Config Connector, use 'external' field to reference existing resources."
+fi)
     	Name string \`json:"name,omitempty"\`
 
     	// The namespace of a ${resource_group}${resource_name} resource.
