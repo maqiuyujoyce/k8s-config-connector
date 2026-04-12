@@ -45,37 +45,9 @@ def main():
     github_username = run(["gh", "api", "user", "-q", ".login"]).stdout.strip()
     user_fork = f"https://github.com/{github_username}/k8s-config-connector"
 
-    # Clean up any leftover branches from previous runs
-    print("Cleaning up potentially stale local and remote branches...")
-    try:
-        run(["git", "branch", "-D", branch_name])
-        print(f"Successfully deleted stale local branch '{branch_name}'.")
-    except subprocess.CalledProcessError as e:
-        if "not found" in e.stderr:
-            print(f"Local branch '{branch_name}' did not exist, which is clean. Continuing.")
-        elif "used by worktree" in e.stderr:
-            print(f"Branch '{branch_name}' is locked by an orphaned worktree. Please clean it up manually.")
-            print("Run 'git worktree list' to see orphaned worktrees.")
-            print("Run 'git worktree remove --force <path>' to remove it.")
-            sys.exit(1)
-        else:
-            print(f"An unexpected error occurred while deleting the local branch:")
-            print(f"Stderr: {e.stderr}")
-            raise
-
-    try:
-        run(["git", "push", user_fork, "--delete", branch_name])
-        print(f"Successfully deleted stale remote branch '{branch_name}'.")
-    except subprocess.CalledProcessError as e:
-        if "remote ref does not exist" in e.stderr:
-            print(f"Remote branch '{branch_name}' did not exist, which is clean. Continuing.")
-        else:
-            print(f"An unexpected error occurred while deleting the remote branch:")
-            print(f"Stderr: {e.stderr}")
-            raise
-
     # Create a temporary worktree
     tmpdir = tempfile.mkdtemp()
+    success = False
     try:
         # We base the new branch on the upstream branch to ensure it's clean
         run(["git", "worktree", "add", "-b", branch_name, tmpdir, f"upstream/{release_branch}"])
@@ -84,7 +56,33 @@ def main():
 
         # Cherry-pick the commits
         for commit in pr_info['commits']:
-            run(["git", "cherry-pick", commit['oid']])
+            try:
+                run(["git", "cherry-pick", commit['oid']])
+            except subprocess.CalledProcessError:
+                print(f"Cherry-pick failed (likely due to conflicts).")
+                print(f"Please resolve the conflicts in another terminal at {tmpdir} and run 'git cherry-pick --continue'.")
+                print(f"Press Enter here when the cherry-pick is complete to continue the script, or Ctrl-C to abort.")
+                try:
+                    input()
+                except (KeyboardInterrupt, EOFError):
+                    print("\nAborting script.")
+                    sys.exit(1)
+                
+                # Check if cherry-pick is still in progress
+                while True:
+                    try:
+                        subprocess.run(["git", "rev-parse", "-q", "--verify", "CHERRY_PICK_HEAD"], check=True, capture_output=True)
+                        # If we get here, CHERRY_PICK_HEAD still exists
+                        print("CHERRY_PICK_HEAD still exists. Did you forget to run 'git cherry-pick --continue'?")
+                        print("Press Enter to check again, or Ctrl-C to abort.")
+                        try:
+                            input()
+                        except (KeyboardInterrupt, EOFError):
+                            print("\nAborting script.")
+                            sys.exit(1)
+                    except subprocess.CalledProcessError:
+                        # CHERRY_PICK_HEAD does not exist, cherry-pick is done
+                        break
 
         # Push the new branch
         run(["git", "push", user_fork, f"{branch_name}:refs/heads/{branch_name}"])
@@ -92,12 +90,18 @@ def main():
         # Create the PR
         pr_output = run(["gh", "pr", "create", "--title", pr_title, "--body", pr_body, "--base", release_branch, "--head", f"{github_username}:{branch_name}"]).stdout.strip()
         print(f"Created PR for cherry-pick: {pr_output}")
+        success = True
 
     finally:
-        # Remove the worktree
-        print("Cleaning up worktree...")
         os.chdir(repo_root)
-        run(["git", "worktree", "remove", tmpdir, "--force"])
+        if success:
+            # Remove the worktree
+            print("Cleaning up worktree...")
+            run(["git", "worktree", "remove", tmpdir, "--force"])
+        else:
+            print(f"\nScript did not complete successfully.")
+            print(f"The temporary worktree is preserved at {tmpdir} for manual inspection.")
+            print(f"To clean up, run: git worktree remove {tmpdir} --force")
 
 if __name__ == "__main__":
     main()
